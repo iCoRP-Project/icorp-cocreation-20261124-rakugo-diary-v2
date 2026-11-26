@@ -1,0 +1,3079 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>電脳寄席 ひより座 〜 今日の日記が落語になる高座 〜</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Edo/Yose Atmosphere -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Shippori+Mincho:wght@500;700;900&family=Yuji+Boku&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --edo-black: #1a1614;
+      --edo-red: #b83b26;
+      --edo-gold: #cfa853;
+      --edo-wood: #4a2f1b;
+      --edo-curtain-kaki: #8b3a2b;
+      --edo-curtain-black: #111111;
+      --edo-curtain-moegi: #264e36;
+    }
+
+    body {
+      font-family: 'Shippori Mincho', serif;
+      background-color: #0d0c0b;
+      color: #ede5d8;
+      overflow-x: hidden;
+    }
+
+    .font-yose {
+      font-family: 'Yuji Boku', 'Kiwi Maru', serif;
+    }
+
+    .font-mincho {
+      font-family: 'Shippori Mincho', serif;
+    }
+
+    /* ---- 共通の部品（大きめの文字・広いタップ領域・十分なコントラスト） ---- */
+    .tab-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      min-height: 48px; padding: 0.5rem 1.1rem; border-radius: 0.75rem;
+      font-family: 'Yuji Boku', 'Kiwi Maru', serif; font-size: 1.05rem; letter-spacing: 0.05em;
+      border: 2px solid #57534e; background: #1c1917; color: #e7e5e4;
+      transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .tab-btn:hover { background: #292524; color: #fff; }
+    .tab-btn.is-active { background: rgba(120, 53, 15, 0.55); border-color: #f59e0b; color: #fef3c7; box-shadow: 0 0 0 1px rgba(245,158,11,.3); }
+    .field-input {
+      width: 100%; min-height: 48px; padding: 0.65rem 0.85rem; border-radius: 0.6rem;
+      background: #0f0c0a; border: 2px solid #57534e; color: #fafaf9; font-size: 1.05rem;
+    }
+    .field-input::placeholder { color: #a8a29e; }
+    .field-input:focus { outline: none; border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.3); }
+    select.field-input option { background: #1c1917; }
+    .btn-sub {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      min-height: 48px; padding: 0.5rem 1rem; border-radius: 0.75rem;
+      background: #292524; border: 2px solid #57534e; color: #f5f5f4; font-size: 1rem;
+      transition: background-color .15s, border-color .15s;
+    }
+    .btn-sub:hover { background: #3a3532; border-color: #a8a29e; }
+    .btn-sub:disabled { opacity: .45; cursor: not-allowed; }
+    .q-card { background: #120f0d; border: 2px solid #44403c; border-radius: 0.9rem; padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .q-card-main { border-color: #d97706; background: #1f160e; }
+    .q-label { font-size: 1.2rem; font-weight: 700; color: #fef3c7; display: flex; align-items: center; gap: 0.6rem; line-height: 1.5; }
+    .q-num { flex-shrink: 0; width: 2.2rem; height: 2.2rem; border-radius: 999px; background: #78350f; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .q-input { font-size: 1.2rem; line-height: 1.7; }
+    .voice-btn-big {
+      display: flex; align-items: center; justify-content: center; gap: 0.6rem; width: 100%;
+      min-height: 64px; padding: 0.75rem 1rem; border-radius: 1rem; font-size: 1.4rem; font-weight: 700;
+      background: #1e3a2f; border: 3px solid #34d399; color: #ecfdf5;
+      font-family: 'Yuji Boku', 'Kiwi Maru', serif;
+    }
+    .voice-btn-big:hover { background: #14532d; }
+    .event-input { font-size: 1.25rem; line-height: 1.8; min-height: 10rem; }
+    .chip {
+      min-height: 44px; padding: 0.4rem 0.9rem; border-radius: 999px;
+      background: #292019; border: 2px solid #78350f; color: #fde68a; font-size: 1rem; text-align: left;
+    }
+    .chip:hover { background: #3b2a1e; color: #fff7d6; }
+    .is-listening { background: #7f1d1d !important; border-color: #fca5a5 !important; color: #fff !important; animation: pulse 1.5s infinite; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid #fbbf24; outline-offset: 2px;
+    }
+
+    /* ---- 台本編集画面 ---- */
+    .line-card {
+      background: #1b1511; border: 2px solid #44403c; border-left: 10px solid var(--dir-color, #a8a29e);
+      border-radius: 0.9rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;
+      transition: box-shadow .3s;
+    }
+    .line-card[data-dir="left"] { --dir-color: #f59e0b; }
+    .line-card[data-dir="right"] { --dir-color: #38bdf8; }
+    .line-card[data-dir="center"] { --dir-color: #a8a29e; }
+    .line-card.just-moved { box-shadow: 0 0 0 4px rgba(251,191,36,.6); }
+    .line-field { display: flex; flex-direction: column; gap: 0.2rem; }
+    .line-label { font-size: 0.95rem; color: #e7e5e4; }
+    .line-no {
+      min-width: 2.5rem; height: 2.5rem; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
+      background: #44403c; color: #fff; font-weight: 700; font-size: 1.1rem; align-self: center;
+    }
+    .kusuri-toggle {
+      display: inline-flex; align-items: center; gap: 0.5rem; min-height: 48px; padding: 0.25rem 0.9rem;
+      border-radius: 0.6rem; background: #2a1414; border: 2px solid #7f1d1d; color: #fecaca; font-size: 1rem; cursor: pointer;
+    }
+    .btn-danger { border-color: #7f1d1d; color: #fecaca; }
+    .btn-danger:hover { background: #450a0a; border-color: #f87171; }
+    .sage-btn {
+      width: 100%; display: flex; gap: 0.75rem; align-items: flex-start; text-align: left;
+      min-height: 52px; padding: 0.75rem 1rem; border-radius: 0.75rem; font-size: 1.05rem; line-height: 1.6;
+      background: #292019; border: 2px solid #78350f; color: #fef3c7;
+    }
+    .sage-btn:hover { background: #3b2a1e; }
+    .sage-btn.is-active { border-color: #fbbf24; background: #451a03; }
+    .sage-mark { flex-shrink: 0; padding: 0 0.5rem; border-radius: 0.4rem; background: #78350f; color: #fff; font-size: 0.9rem; }
+    .sage-btn.is-active .sage-mark { background: #b45309; }
+
+    /* ---- 高座の操作・「自分で演じる」モード ---- */
+    .mode-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem; min-height: 52px; padding: 0.5rem 1.1rem;
+      border-radius: 0.75rem; font-size: 1.05rem; background: #1c1917; border: 2px solid #57534e; color: #f5f5f4;
+    }
+    .mode-btn:hover { background: #292524; }
+    .mode-btn.is-active { background: #78350f; border-color: #fbbf24; color: #fff; font-weight: 700; }
+    .stage-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+      min-width: 56px; min-height: 56px; padding: 0.5rem 0.9rem; border-radius: 0.9rem;
+      background: #292524; border: 2px solid #78716c; color: #fafaf9; font-size: 1.15rem;
+      white-space: nowrap;
+      font-family: 'Yuji Boku', 'Kiwi Maru', serif;
+    }
+    .stage-btn:hover { background: #3a3532; }
+    .stage-btn-main { background: #b45309; border-color: #fbbf24; color: #fff; padding: 0.5rem 1.4rem; font-size: 1.3rem; }
+    .stage-btn-main:hover { background: #d97706; }
+    .cue-badge {
+      align-self: flex-start; padding: 0.4rem 1rem; border-radius: 0.6rem; font-size: 1.35rem; font-weight: 700;
+      background: #0c0a09; color: #fff; border: 3px solid #fbbf24;
+    }
+    .speech-text.is-self { font-size: clamp(1.75rem, 4.2vw, 3rem); line-height: 1.6; color: #fff; }
+    #kozaView.is-self .stage-frame { max-width: 30rem; }
+    #kozaView.is-self .lantern-sway { display: none; }
+    #kozaView.is-self #rakugokaWrapper { width: 11rem; height: 11rem; }
+    #kozaView.is-self #mekuriBox, #kozaView.is-self #askTodaySpeechBubble { display: none; }
+    #kozaView:fullscreen { overflow-y: auto; background: #090807; }
+
+    /* ---- 台本帳 ---- */
+    .library-card {
+      background: #1b1511; border: 2px solid #44403c; border-radius: 0.9rem; padding: 1rem 1.1rem;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    .library-card.is-current { border-color: #f59e0b; }
+    .current-pill { padding: 0.1rem 0.6rem; border-radius: 999px; background: #78350f; color: #fff; font-size: 0.95rem; }
+
+    /* ---- めくり（演目・噺家・作）：縦書きで右から左へ列が並ぶ ---- */
+    .mekuri {
+      writing-mode: vertical-rl; text-orientation: upright;
+      max-height: 150px; padding: 0.5rem 0.3rem; line-height: 1.25;
+      background: #faf5e8; color: #1c1917; border: 1px solid #a8a29e; border-radius: 2px;
+      box-shadow: 0 10px 20px rgba(0,0,0,.5);
+    }
+    .mekuri > span { display: block; white-space: normal; padding: 0 0.15rem; }
+    .mekuri-title { font-weight: 700; color: #78350f; font-size: 0.85rem; border-left: 1px solid #d6d3d1; }
+    .mekuri-name { font-weight: 900; font-size: 1rem; letter-spacing: 0.1em; }
+    .mekuri-credit { color: #7f1d1d; font-size: 0.8rem; border-right: 1px solid #d6d3d1; }
+    @media (min-width: 768px) {
+      .mekuri { max-height: 210px; }
+      .mekuri-title { font-size: 1rem; }
+      .mekuri-name { font-size: 1.15rem; }
+      .mekuri-credit { font-size: 0.9rem; }
+    }
+    @media (max-width: 639px) {
+      .tab-btn { flex: 1 1 45%; justify-content: center; font-size: 0.9rem; white-space: nowrap; padding: 0.4rem 0.5rem; }
+      .mekuri { max-height: 96px; padding: 0.3rem 0.2rem; }
+      .mekuri-title { font-size: 0.7rem; } .mekuri-name { font-size: 0.8rem; } .mekuri-credit { font-size: 0.65rem; }
+      #kozaView .lantern-sway { display: none; }
+    }
+
+    /* ---- 印刷用の台本（A4） ---- */
+    #printArea { display: none; }
+    @media print {
+      @page { size: A4 portrait; margin: 14mm 12mm; }
+      body { background: #fff !important; color: #000 !important; display: block !important; min-height: 0 !important; }
+      body > *:not(#printArea) { display: none !important; }
+      #printArea { display: block !important; font-family: 'Shippori Mincho', serif; color: #000; font-size: 11pt; line-height: 1.6; }
+      .p-title { font-family: 'Yuji Boku', serif; font-size: 22pt; text-align: center; margin: 0 0 4mm; border-bottom: 2px solid #000; padding-bottom: 2mm; }
+      .p-meta { margin: 0 auto 4mm; border-collapse: collapse; }
+      .p-meta th { text-align: right; padding: 0.5mm 3mm 0.5mm 0; white-space: nowrap; font-weight: 700; }
+      .p-meta td { padding: 0.5mm 0; }
+      .p-events { border: 1px solid #555; padding: 2mm 3mm; margin-bottom: 4mm; font-size: 10pt; }
+      .p-events p { margin: 0.5mm 0; white-space: pre-line; }
+      .p-lines { width: 100%; border-collapse: collapse; }
+      .p-lines th { border-bottom: 1.5px solid #000; padding: 1mm; text-align: left; font-size: 10pt; }
+      .p-lines td { border-bottom: 0.5px solid #999; padding: 1.5mm 1mm; vertical-align: top; }
+      .p-lines tr { break-inside: avoid; }
+      .p-no { width: 8mm; text-align: right; color: #333; }
+      .p-speaker { width: 30mm; }
+      .p-name { font-weight: 700; }
+      .p-dir { font-size: 8.5pt; color: #333; }
+      .p-kusuri { display: inline-block; border: 1px solid #000; border-radius: 2mm; padding: 0 1.5mm; margin-right: 1.5mm; font-size: 8.5pt; font-weight: 700; }
+      .p-foot { margin-top: 4mm; font-size: 8.5pt; color: #333; }
+    }
+
+    /* めくりの縦書き */
+    .writing-vertical {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      white-space: nowrap;
+    }
+
+    /* 定式幕グラデーション/ストライプ */
+    .joshikimaku {
+      background: repeating-linear-gradient(
+        to right,
+        #111111 0px,
+        #111111 50px,
+        #8a3324 50px,
+        #8a3324 100px,
+        #284e3a 100px,
+        #284e3a 150px
+      );
+    }
+
+    /* 提灯ゆらゆら */
+    @keyframes lanternSway {
+      0%, 100% { transform: rotate(-2deg); }
+      50% { transform: rotate(2deg); }
+    }
+    .lantern-sway {
+      animation: lanternSway 4s ease-in-out infinite;
+      transform-origin: top center;
+    }
+
+    /* 笑い・拍手の吹き出しアニメーション */
+    @keyframes laughFloat {
+      0% { opacity: 0; transform: translateY(15px) scale(0.8); }
+      20% { opacity: 1; transform: translateY(0) scale(1.1); }
+      80% { opacity: 1; transform: translateY(-20px) scale(1); }
+      100% { opacity: 0; transform: translateY(-40px) scale(0.9); }
+    }
+    .laugh-bubble {
+      animation: laughFloat 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    /* めくり台アニメーション */
+    .mekuri-flip {
+      animation: mekuriFlip 0.8s ease-in-out;
+      transform-origin: top center;
+    }
+    @keyframes mekuriFlip {
+      0% { transform: rotateX(0deg); }
+      50% { transform: rotateX(-90deg); opacity: 0.5; }
+      100% { transform: rotateX(0deg); opacity: 1; }
+    }
+
+    /* 和紙テクスチャ背景風 */
+    .washi-pattern {
+      background-color: #f7f3e9;
+      background-image: radial-gradient(#d6cfc2 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    /* カスタムスクロールバー */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1c1815;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #5a493a;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-800 selection:text-amber-100">
+
+  <!-- ヘッダー装飾：定式幕と寄席行灯 -->
+  <header class="relative z-30 bg-[#161210] border-b border-[#36271c] shadow-2xl">
+    <div class="h-2.5 joshikimaku w-full"></div>
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <!-- 架空の寄席「ひより座」の紋 -->
+        <div class="w-10 h-10 rounded-full bg-amber-700/30 border border-amber-600/50 flex items-center justify-center text-amber-300 font-yose text-xl shadow-inner">
+          笑
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="hidden sm:inline text-sm px-2 py-0.5 rounded bg-red-900/60 text-red-200 border border-red-700 font-yose">架空の寄席</span>
+            <h1 class="text-xl md:text-2xl font-bold tracking-widest text-[#f5ebd9] font-yose">ひより座 <span class="text-amber-400 text-lg md:text-xl font-mincho">電脳高座</span></h1>
+          </div>
+          <p class="text-sm md:text-base text-stone-200 tracking-wider">あなたの今日の出来事を、3分ほどの短い落語に仕立てて演じます</p>
+        </div>
+      </div>
+
+      <!-- 右側：ナビゲーション・音響トグル・APIキー設定 -->
+      <div class="flex items-center space-x-2">
+        <button id="audioToggleBtn" class="whitespace-nowrap min-h-[44px] px-3 py-2 rounded-lg border border-amber-700/60 bg-[#241a14] hover:bg-[#33251c] text-amber-100 text-base flex items-center space-x-1.5 transition shadow">
+          <i data-lucide="volume-2" class="w-4 h-4 text-amber-400"></i>
+          <span id="audioStatusText">音: 入</span>
+        </button>
+        <button id="configBtn" title="設定" aria-label="設定" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900/80 hover:bg-stone-800 text-stone-100 transition">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="flex-1 flex flex-col relative overflow-hidden">
+    
+    <!-- タブ切り替え：① 出来事を書く → ② 台本をなおす → ③ 高座で演じる -->
+    <nav class="bg-[#120f0d] border-b border-[#281c15] py-2 px-3 z-20" aria-label="画面の切り替え">
+      <div id="tabBar" class="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-2">
+        <button class="tab-btn" data-tab="input">
+          <i data-lucide="pen-line" class="w-5 h-5"></i>
+          <span>① 今日の出来事</span>
+        </button>
+        <button class="tab-btn" data-tab="edit">
+          <i data-lucide="file-pen-line" class="w-5 h-5"></i>
+          <span>② 台本をなおす</span>
+        </button>
+        <button class="tab-btn is-active" data-tab="koza">
+          <i data-lucide="theater" class="w-5 h-5"></i>
+          <span>③ 高座で演じる</span>
+        </button>
+        <button class="tab-btn" data-tab="library">
+          <i data-lucide="folder-open" class="w-5 h-5"></i>
+          <span>台本帳<span class="hidden sm:inline">（保存・読み込み）</span></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- 画面1: 寄席高座ビュー（客席から見ているイメージ） -->
+    <section id="kozaView" data-view="koza" class="flex-1 flex flex-col justify-between relative bg-[#090807] overflow-hidden select-none">
+      
+      <!-- 舞台上部の定式幕と梁（はり） -->
+      <div class="absolute top-0 left-0 right-0 z-10 pointer-events-none">
+        <div class="h-4 joshikimaku opacity-90 border-b border-amber-950"></div>
+        <div class="h-6 bg-gradient-to-b from-[#1f1510] to-transparent flex justify-around items-center px-8"></div>
+      </div>
+
+      <!-- 提灯（上手・下手） -->
+      <div class="absolute top-6 left-4 md:left-12 z-20 lantern-sway flex flex-col items-center">
+        <div class="w-1 h-6 bg-amber-900/80"></div>
+        <div class="w-11 md:w-14 py-4 rounded-2xl bg-[#ffeed6] text-[#8a1c14] border-2 border-[#801811] shadow-[0_0_20px_rgba(255,200,100,0.35)] flex flex-col items-center justify-center font-yose font-bold leading-tight">
+          <span class="text-xs md:text-sm text-stone-800">ひより</span>
+          <span class="text-sm md:text-base tracking-tighter">座</span>
+        </div>
+        <div class="w-2.5 h-1.5 bg-stone-800 rounded-b"></div>
+      </div>
+
+      <div class="absolute top-6 right-4 md:right-12 z-20 lantern-sway flex flex-col items-center" style="animation-delay: -2s;">
+        <div class="w-1 h-6 bg-amber-900/80"></div>
+        <div class="w-11 md:w-14 py-4 rounded-2xl bg-[#ffeed6] text-[#8a1c14] border-2 border-[#801811] shadow-[0_0_20px_rgba(255,200,100,0.35)] flex flex-col items-center justify-center font-yose font-bold leading-tight">
+          <span class="text-xs md:text-sm text-stone-800">當る</span>
+          <span class="text-sm md:text-base tracking-tighter">大入</span>
+        </div>
+        <div class="w-2.5 h-1.5 bg-stone-800 rounded-b"></div>
+      </div>
+
+      <!-- 舞台中央（スポットライト・鏡板・高座・めくり） -->
+      <div class="relative w-full max-w-5xl mx-auto flex-1 flex flex-col items-center justify-center pt-8 pb-4 px-2">
+
+        <!-- 舞台の鏡板（老松の背景） -->
+        <div class="stage-frame relative w-full max-w-3xl aspect-[16/9] md:aspect-[21/10] rounded-xl overflow-hidden border-4 border-[#3d2417] shadow-[0_0_50px_rgba(0,0,0,0.9)] bg-[#2e1d13] flex flex-col justify-end">
+          
+          <!-- 松の羽目板背景グラフィック (SVG) -->
+          <div class="absolute inset-0 opacity-80 pointer-events-none">
+            <svg viewBox="0 0 800 450" class="w-full h-full object-cover">
+              <defs>
+                <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#472d1c"/>
+                  <stop offset="50%" stop-color="#362114"/>
+                  <stop offset="100%" stop-color="#24140b"/>
+                </linearGradient>
+                <radialGradient id="spotlight" cx="50%" cy="55%" r="45%">
+                  <stop offset="0%" stop-color="#fff8db" stop-opacity="0.3"/>
+                  <stop offset="60%" stop-color="#ffa500" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#000000" stop-opacity="0.6"/>
+                </radialGradient>
+              </defs>
+              <rect width="800" height="450" fill="url(#woodGrad)" />
+              <!-- 板目のスリット -->
+              <g stroke="#1b0f07" stroke-width="2" opacity="0.4">
+                <line x1="100" y1="0" x2="100" y2="450"/>
+                <line x1="200" y1="0" x2="200" y2="450"/>
+                <line x1="300" y1="0" x2="300" y2="450"/>
+                <line x1="400" y1="0" x2="400" y2="450"/>
+                <line x1="500" y1="0" x2="500" y2="450"/>
+                <line x1="600" y1="0" x2="600" y2="450"/>
+                <line x1="700" y1="0" x2="700" y2="450"/>
+              </g>
+              <!-- 鏡板の老松イラスト -->
+              <path d="M 400 320 C 370 260 330 220 310 170 C 300 145 320 110 350 95 C 410 70 480 80 520 130 C 540 155 570 170 610 180" fill="none" stroke="#22160d" stroke-width="28" stroke-linecap="round"/>
+              <path d="M 330 190 C 270 180 230 195 190 220" fill="none" stroke="#1d120a" stroke-width="16" stroke-linecap="round"/>
+              <!-- 松葉の塊（緑） -->
+              <ellipse cx="340" cy="110" rx="60" ry="32" fill="#1b3623" opacity="0.85"/>
+              <ellipse cx="450" cy="95" rx="75" ry="38" fill="#23462d" opacity="0.9"/>
+              <ellipse cx="530" cy="140" rx="65" ry="34" fill="#1a3421" opacity="0.85"/>
+              <ellipse cx="210" cy="210" rx="50" ry="26" fill="#1e3a26" opacity="0.8"/>
+              <ellipse cx="610" cy="190" rx="45" ry="24" fill="#24452d" opacity="0.75"/>
+              <!-- スポットライトオーバーレイ -->
+              <rect width="800" height="450" fill="url(#spotlight)" />
+            </svg>
+          </div>
+
+          <!-- めくり台（下手側：画面左） -->
+          <div class="absolute left-2 md:left-8 bottom-8 md:bottom-16 z-20 flex flex-col items-center">
+            <!-- 演者・演目名の手書き風めくり -->
+            <div id="mekuriBox" class="mekuri font-yose select-none transition-transform">
+              <span id="mekuriTitle" class="mekuri-title">小噺</span>
+              <span id="mekuriName" class="mekuri-name">日々亭よろず</span>
+              <span id="mekuriCredit" class="mekuri-credit"></span>
+            </div>
+            <!-- めくり台の木製スタンド -->
+            <div class="w-1.5 h-10 md:h-16 bg-[#3a2012]"></div>
+            <div class="w-8 md:w-12 h-2 bg-[#25130a] rounded-t"></div>
+          </div>
+
+          <!-- 高座（落語家＆座布団） -->
+          <div class="relative z-10 w-full flex flex-col items-center justify-end pb-3">
+            
+            <!-- 笑いエフェクト・大向こうの掛け声ポップアップコンテナ -->
+            <div id="laughReactionContainer" class="absolute -top-12 inset-x-0 h-28 pointer-events-none flex justify-center items-center overflow-visible"></div>
+
+            <!-- 噺家からの呼びかけバルーン（今日は何がありましたか？） -->
+            <div id="askTodaySpeechBubble" class="hidden sm:flex absolute -top-6 md:-top-8 z-30 bg-[#fbf6ea] text-stone-900 border-2 border-amber-800 rounded-2xl px-4 py-2 shadow-2xl items-center space-x-2 cursor-pointer hover:bg-amber-100 transition transform hover:scale-105 animate-bounce">
+              <span class="text-sm md:text-base font-yose font-bold text-red-900">よろず：</span>
+              <span class="text-sm md:text-base font-yose tracking-wide">「さて、<strong class="text-red-800 underline decoration-amber-600">今日は何がありました？</strong> 一席の落語にいたしましょう」</span>
+              <span class="text-sm px-2 py-1 rounded bg-amber-800 text-amber-50 font-sans">答える</span>
+            </div>
+
+            <!-- 落語家 SVG アニメーションキャラクター -->
+            <div id="rakugokaWrapper" class="relative w-48 h-48 md:w-64 md:h-64 transition-transform duration-300 ease-out flex items-center justify-center">
+              <svg id="rakugokaSvg" viewBox="0 0 300 300" class="w-full h-full filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.6)]">
+                <defs>
+                  <!-- 着物のグラデーション -->
+                  <linearGradient id="kimonoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#2c3e50"/>
+                    <stop offset="50%" stop-color="#1e2b37"/>
+                    <stop offset="100%" stop-color="#131d26"/>
+                  </linearGradient>
+                  <!-- 羽織のグラデーション（藍色または渋い紫） -->
+                  <linearGradient id="haoriGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#553c69"/>
+                    <stop offset="100%" stop-color="#352243"/>
+                  </linearGradient>
+                  <!-- 座布団の紫金 -->
+                  <linearGradient id="zabutonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#8c1d32"/>
+                    <stop offset="60%" stop-color="#671021"/>
+                    <stop offset="100%" stop-color="#3e0712"/>
+                  </linearGradient>
+                </defs>
+
+                <!-- 落語家の体・羽織・着物 -->
+                <g id="bodyGroup">
+                  <!-- 着物（下層） -->
+                  <path d="M 80 240 L 150 145 L 220 240 Z" fill="url(#kimonoGrad)"/>
+                  <path d="M 140 145 L 150 190 L 160 145" stroke="#f1e7d0" stroke-width="4" fill="none"/>
+
+                  <!-- 羽織（肩から膝へ） -->
+                  <path d="M 70 245 C 65 190 95 140 125 130 C 135 127 165 127 175 130 C 205 140 235 190 230 245 C 200 255 100 255 70 245 Z" fill="url(#haoriGrad)" stroke="#22132e" stroke-width="2"/>
+                  <!-- 羽織紐（白房） -->
+                  <circle cx="150" cy="180" r="4" fill="#faf5e8"/>
+                  <path d="M 148 182 L 144 200 M 152 182 L 156 200" stroke="#faf5e8" stroke-width="3" stroke-linecap="round"/>
+
+                  <!-- 手・扇子・手ぬぐい（所作） -->
+                  <!-- 左手（右手と対） -->
+                  <ellipse cx="105" cy="210" rx="14" ry="10" fill="#f7d4b2"/>
+                  <ellipse cx="195" cy="210" rx="14" ry="10" fill="#f7d4b2"/>
+                  
+                  <!-- 扇子 (Sensu) -->
+                  <g id="sensuItem" class="transition-all duration-300 origin-[195px_210px]">
+                    <line x1="195" y1="210" x2="225" y2="175" stroke="#e8dfcb" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="195" y1="210" x2="225" y2="175" stroke="#8a2012" stroke-width="2"/>
+                    <polygon points="215,165 235,170 220,185" fill="#f5ede0"/>
+                  </g>
+                </g>
+
+                <!-- 頭部・首・顔・表情 -->
+                <g id="headGroup" class="transition-transform duration-200 origin-[150px_130px]">
+                  <!-- 首 -->
+                  <rect x="141" y="112" width="18" height="22" fill="#ebbfa0" rx="2"/>
+
+                  <!-- 頭部輪郭 -->
+                  <ellipse cx="150" cy="95" rx="34" ry="38" fill="#fcdbbd"/>
+
+                  <!-- 髪型（坊主・短髪寄席カット） -->
+                  <path d="M 116 95 C 116 60 140 50 150 50 C 160 50 184 60 184 95 C 184 80 175 62 150 62 C 125 62 116 80 116 95 Z" fill="#2b231f"/>
+
+                  <!-- 眉毛 -->
+                  <path id="eyebrowLeft" d="M 132 82 Q 140 78 145 82" stroke="#2b231f" stroke-width="3" stroke-linecap="round" fill="none"/>
+                  <path id="eyebrowRight" d="M 155 82 Q 160 78 168 82" stroke="#2b231f" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+                  <!-- 目（状態によって形状変化：通常、笑顔、驚き） -->
+                  <g id="eyesNormal">
+                    <circle cx="138" cy="92" r="3.2" fill="#1b120c"/>
+                    <circle cx="162" cy="92" r="3.2" fill="#1b120c"/>
+                    <path d="M 134 89 Q 138 87 142 89" stroke="#332218" stroke-width="1.5" fill="none"/>
+                    <path d="M 158 89 Q 162 87 166 89" stroke="#332218" stroke-width="1.5" fill="none"/>
+                  </g>
+                  <g id="eyesSmile" class="hidden">
+                    <path d="M 133 94 Q 138 88 143 94" stroke="#1b120c" stroke-width="3" stroke-linecap="round" fill="none"/>
+                    <path d="M 157 94 Q 162 88 167 94" stroke="#1b120c" stroke-width="3" stroke-linecap="round" fill="none"/>
+                  </g>
+                  <g id="eyesSurprise" class="hidden">
+                    <circle cx="138" cy="92" r="5" stroke="#1b120c" stroke-width="2" fill="#fff"/>
+                    <circle cx="138" cy="92" r="2" fill="#000"/>
+                    <circle cx="162" cy="92" r="5" stroke="#1b120c" stroke-width="2" fill="#fff"/>
+                    <circle cx="162" cy="92" r="2" fill="#000"/>
+                  </g>
+
+                  <!-- 鼻 -->
+                  <path d="M 150 92 Q 153 98 149 101" stroke="#d49b79" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+
+                  <!-- 口（口パク用） -->
+                  <g id="mouthGroup">
+                    <path id="mouthShape" d="M 143 108 Q 150 112 157 108" stroke="#7a2a22" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+                    <ellipse id="mouthOpen" cx="150" cy="111" rx="6" ry="4" fill="#631b14" class="hidden"/>
+                  </g>
+
+                  <!-- 頬の赤み -->
+                  <circle cx="129" cy="100" r="5" fill="#f0907d" opacity="0.35"/>
+                  <circle cx="171" cy="100" r="5" fill="#f0907d" opacity="0.35"/>
+                </g>
+
+                <!-- ふかふかの紫金高座布団 -->
+                <g id="zabuton">
+                  <path d="M 50 250 C 45 235 70 232 150 232 C 230 232 255 235 250 250 C 248 266 220 274 150 274 C 80 274 52 266 50 250 Z" fill="url(#zabutonGrad)" stroke="#4a0914" stroke-width="2"/>
+                  <!-- 四隅の房（ふさ） -->
+                  <circle cx="56" cy="246" r="3" fill="#e6c265"/>
+                  <circle cx="244" cy="246" r="3" fill="#e6c265"/>
+                  <circle cx="70" cy="265" r="3" fill="#e6c265"/>
+                  <circle cx="230" cy="265" r="3" fill="#e6c265"/>
+                  <circle cx="150" cy="254" r="2.5" fill="#e6c265" opacity="0.8"/>
+                </g>
+              </svg>
+            </div>
+
+            <!-- 高座の木製台盤 -->
+            <div class="w-full max-w-md h-5 bg-[#3a1d0d] rounded-t border-t-2 border-[#5c3118] shadow-lg flex justify-between px-6 items-center">
+              <span class="text-xs text-[#d6b08a] font-yose">ひより座</span>
+              <span class="text-xs text-[#d6b08a] font-yose">高座</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 観客席の頭部・肩のシルエット（観客席から見上げている臨場感） -->
+        <div class="w-full max-w-4xl -mt-6 md:-mt-8 z-30 flex justify-between items-end px-4 pointer-events-none opacity-90 select-none">
+          <div class="flex space-x-3 items-end">
+            <!-- 観客1 -->
+            <div class="w-16 h-12 md:w-24 md:h-16 bg-[#080706] rounded-t-full shadow-2xl"></div>
+            <!-- 観客2 -->
+            <div class="w-20 h-16 md:w-28 md:h-20 bg-[#060505] rounded-t-full shadow-2xl hidden sm:block"></div>
+          </div>
+          <div class="text-center pb-2">
+            <!-- クスリと笑うカウンターバッジ -->
+            <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-stone-900/90 border border-amber-800/60 shadow-lg backdrop-blur">
+              <span class="text-sm md:text-base text-amber-200 font-yose">笑い所（クスグリ）:</span>
+              <span id="kusuriCounter" class="text-sm md:text-base font-bold text-amber-50">0 / 0</span>
+            </div>
+          </div>
+          <div class="flex space-x-3 items-end">
+            <!-- 観客3 -->
+            <div class="w-20 h-14 md:w-28 md:h-18 bg-[#070605] rounded-t-full shadow-2xl hidden sm:block"></div>
+            <!-- 観客4 -->
+            <div class="w-16 h-12 md:w-24 md:h-16 bg-[#080706] rounded-t-full shadow-2xl"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 字幕と操作（自動上演 ／ 自分で演じる） -->
+      <div class="relative z-30 max-w-5xl w-full mx-auto px-3 pb-3 space-y-3">
+
+        <!-- 上演のしかた -->
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="上演のしかた">
+            <button type="button" class="mode-btn is-active" data-mode="auto" role="radio" aria-checked="true">
+              <i data-lucide="volume-2" class="w-5 h-5"></i><span>自動で上演（読み上げ）</span>
+            </button>
+            <button type="button" class="mode-btn" data-mode="self" role="radio" aria-checked="false">
+              <i data-lucide="mic" class="w-5 h-5"></i><span>自分で演じる（声に出して読む）</span>
+            </button>
+          </div>
+          <button type="button" id="fullscreenBtn" class="btn-sub" title="画面いっぱいに表示">
+            <i data-lucide="maximize" class="w-5 h-5"></i><span>全画面</span>
+          </button>
+        </div>
+
+        <!-- 自分で演じるときの案内 -->
+        <div id="selfSetup" class="hidden rounded-xl bg-[#1c1612]/95 border-2 border-emerald-800 p-4">
+          <p class="text-lg text-stone-100 leading-relaxed">セリフを声に出して読んでみましょう。どちらに顔を向けるかも出ます。読み終えたら<strong class="text-amber-200">「次へ」</strong>を押してください（スペースキーや Enter キーでも進みます）。</p>
+        </div>
+
+        <!-- 字幕板 -->
+        <div id="subtitleBoard" class="rounded-xl bg-[#1c1612]/95 border-2 border-[#7a5a40] shadow-2xl p-4 md:p-5 flex flex-col md:flex-row gap-4 items-stretch justify-between">
+          <div class="flex-1 min-h-[110px] flex flex-col justify-center gap-2">
+            <div id="cueBadge" class="hidden cue-badge"></div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="speechSpeaker" class="px-3 py-1 rounded-md text-lg font-yose bg-amber-900 text-amber-50 border border-amber-600">噺家</span>
+              <span id="speechDirection" class="text-base text-stone-200">【正面】</span>
+              <span id="kusuriBadge" class="hidden px-3 py-1 rounded-md text-base font-bold bg-red-800 text-yellow-100 border border-yellow-400/60 animate-pulse">笑い所（クスグリ）！</span>
+            </div>
+            <p id="speechText" class="speech-text text-2xl md:text-3xl text-[#fbf4e8] font-mincho leading-relaxed tracking-wide"></p>
+            <p id="nextPreview" class="hidden text-lg text-stone-200 leading-relaxed border-t border-stone-700 pt-2"></p>
+          </div>
+
+          <div class="flex flex-col justify-between items-stretch md:items-end gap-3 border-t md:border-t-0 md:border-l border-stone-700 pt-3 md:pt-0 md:pl-4 md:w-80">
+            <div class="text-base text-stone-200 flex md:flex-col justify-between items-center md:items-end gap-2">
+              <span id="progressText">1 / 1</span>
+              <div class="w-32 h-2.5 bg-stone-700 rounded-full overflow-hidden" aria-hidden="true">
+                <div id="progressBar" class="h-full bg-amber-500 w-0 transition-all duration-300"></div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 justify-center md:justify-end">
+              <button id="prevBtn" title="前のセリフ" aria-label="前のセリフ" class="stage-btn">
+                <i data-lucide="chevron-left" class="w-7 h-7"></i>
+              </button>
+              <button id="playPauseBtn" class="stage-btn stage-btn-main">
+                <i id="playPauseIcon" data-lucide="play" class="w-6 h-6"></i>
+                <span id="playPauseText">開演</span>
+              </button>
+              <button id="selfNextBtn" class="hidden stage-btn stage-btn-main">
+                <span>次へ</span>
+                <i data-lucide="chevron-right" class="w-7 h-7"></i>
+              </button>
+              <button id="nextBtn" title="次のセリフ" aria-label="次のセリフ" class="stage-btn">
+                <i data-lucide="chevron-right" class="w-7 h-7"></i>
+              </button>
+            </div>
+
+            <div id="autoControls" class="flex items-center gap-2 justify-center md:justify-end">
+              <span class="text-base text-stone-200 whitespace-nowrap">速さ</span>
+              <button id="speedBtn" class="btn-sub !min-h-[44px] text-amber-200 whitespace-nowrap">ふつう</button>
+              <button id="ttsToggleBtn" title="読み上げの入・切" class="btn-sub !min-h-[44px] whitespace-nowrap">
+                <i id="ttsIcon" data-lucide="mic" class="w-5 h-5"></i><span id="ttsText">読み上げ 入</span>
+              </button>
+            </div>
+            <div id="selfControls" class="hidden flex items-center gap-2 justify-center md:justify-end">
+              <button id="laughBtn" type="button" class="btn-sub text-yellow-100 border-yellow-700">
+                <span aria-hidden="true">😄</span><span>笑い声！</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- 画面①: 今日の出来事（入力・たたき台づくり） -->
+    <section id="inputView" data-view="input" class="hidden flex-1 overflow-y-auto p-4 md:p-8 bg-[#120f0d]">
+      <div class="max-w-3xl mx-auto space-y-6">
+
+        <!-- 出来事を質問に答えて話す -->
+        <div class="bg-[#1b1511] p-5 md:p-6 rounded-2xl border-2 border-amber-700/70 shadow-xl space-y-4">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-full bg-amber-900/60 border-2 border-amber-500/60 flex items-center justify-center text-amber-100 text-2xl font-yose shrink-0" aria-hidden="true">噺</div>
+            <div class="space-y-1">
+              <h2 class="text-2xl md:text-3xl font-bold font-yose text-amber-100">「えー、今日は何がありました？」</h2>
+              <p class="text-lg text-stone-100 leading-relaxed">噺家がいくつか質問します。短いひと言で構いません。文字で書くか、<strong class="text-emerald-200">「声で答える」</strong>を押して話してください。<strong class="text-amber-200">④だけ答えれば</strong>、あとは空欄でも作れます。</p>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <span class="block text-lg text-stone-100">思いつかないときは、例を押してみてください：</span>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="sample-preset chip" data-sample="0">孫とスマホの写真集</button>
+              <button type="button" class="sample-preset chip" data-sample="1">切符を握りしめて改札へ</button>
+              <button type="button" class="sample-preset chip" data-sample="2">大根のおすそ分け</button>
+              <button type="button" class="sample-preset chip" data-sample="3">セルフレジにお辞儀</button>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+          <div class="q-card">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <label for="q_where" class="q-label"><span class="q-num">1</span>どこでのことですか？（いつのことかも）</label>
+              <button type="button" class="voice-btn btn-sub" data-target="q_where">
+                <i data-lucide="mic" class="w-5 h-5 text-emerald-300"></i>
+                <span class="voice-label">声で答える</span>
+              </button>
+            </div>
+            <textarea id="q_where" rows="2" placeholder="例：今日のお昼、家で" class="field-input q-input leading-relaxed resize-y" data-answer="where"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <label for="q_who" class="q-label"><span class="q-num">2</span>だれといましたか？</label>
+              <button type="button" class="voice-btn btn-sub" data-target="q_who">
+                <i data-lucide="mic" class="w-5 h-5 text-emerald-300"></i>
+                <span class="voice-label">声で答える</span>
+              </button>
+            </div>
+            <textarea id="q_who" rows="2" placeholder="例：孫と（ひとりのときは空欄で）" class="field-input q-input leading-relaxed resize-y" data-answer="who"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <label for="q_doing" class="q-label"><span class="q-num">3</span>何をしていましたか？</label>
+              <button type="button" class="voice-btn btn-sub" data-target="q_doing">
+                <i data-lucide="mic" class="w-5 h-5 text-emerald-300"></i>
+                <span class="voice-label">声で答える</span>
+              </button>
+            </div>
+            <textarea id="q_doing" rows="2" placeholder="例：スマホのカメラの使い方を教わっていた" class="field-input q-input leading-relaxed resize-y" data-answer="doing"></textarea>
+          </div>
+          <div class="q-card q-card-main">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <label for="q_happened" class="q-label"><span class="q-num">4</span>何が起きましたか？（ここは書いてください）</label>
+              <button type="button" class="voice-btn btn-sub" data-target="q_happened">
+                <i data-lucide="mic" class="w-5 h-5 text-emerald-300"></i>
+                <span class="voice-label">声で答える</span>
+              </button>
+            </div>
+            <textarea id="q_happened" rows="3" placeholder="例：景色を撮るつもりが、自分の顔ばかり三十枚撮れていた" class="field-input q-input leading-relaxed resize-y" data-answer="happened"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <label for="q_quote" class="q-label"><span class="q-num">5</span>だれかに、何か言われましたか？</label>
+              <button type="button" class="voice-btn btn-sub" data-target="q_quote">
+                <i data-lucide="mic" class="w-5 h-5 text-emerald-300"></i>
+                <span class="voice-label">声で答える</span>
+              </button>
+            </div>
+            <textarea id="q_quote" rows="2" placeholder="例：じいじの写真集ができたね" class="field-input q-input leading-relaxed resize-y" data-answer="quote"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <label for="q_feeling" class="q-label"><span class="q-num">6</span>そのとき、どう思いましたか？</label>
+              <button type="button" class="voice-btn btn-sub" data-target="q_feeling">
+                <i data-lucide="mic" class="w-5 h-5 text-emerald-300"></i>
+                <span class="voice-label">声で答える</span>
+              </button>
+            </div>
+            <textarea id="q_feeling" rows="2" placeholder="例：恥ずかしいけど、ちょっとうれしかった" class="field-input q-input leading-relaxed resize-y" data-answer="feeling"></textarea>
+          </div>
+          </div>
+        </div>
+
+        <!-- 名前 -->
+        <div class="bg-[#1b1511] p-5 rounded-xl border border-stone-700 space-y-2">
+          <label class="block">
+            <span class="block text-lg font-semibold text-amber-100 mb-1">あなたのお名前・呼び名（書かなくても大丈夫です）</span>
+            <input type="text" id="authorNameInput" maxlength="20" placeholder="例：はなこ" class="field-input">
+          </label>
+          <p class="text-base text-stone-200">高座の横の名札（めくり）に「作」として出ます。</p>
+        </div>
+
+        <!-- くわしい設定 -->
+        <details class="bg-[#1b1511] rounded-xl border border-stone-700">
+          <summary class="cursor-pointer select-none p-5 text-lg font-semibold text-stone-100">もっと設定する（噺家の名前・語り口）</summary>
+          <div class="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label class="block">
+              <span class="block text-base font-semibold text-stone-100 mb-1">高座名（演じる噺家の名前）</span>
+              <input type="text" id="performerNameInput" value="日々亭 よろず" maxlength="20" class="field-input">
+            </label>
+            <label class="block">
+              <span class="block text-base font-semibold text-stone-100 mb-1">口演スタイル（語り口）</span>
+              <select id="rakugoStyleSelect" class="field-input">
+                <option value="edo_classic">江戸前の古典風（長屋の八っつぁん・ご隠居）</option>
+                <option value="modern_tempo">テンポの速い現代風（軽快な掛け合い）</option>
+                <option value="ninjo_warm">ほのぼの人情噺風（じんわり温かい）</option>
+              </select>
+            </label>
+          </div>
+        </details>
+
+        <!-- 生成ボタン -->
+        <div class="space-y-3 pb-6">
+          <button id="generateBtn" class="w-full min-h-[64px] py-3 px-6 rounded-xl bg-gradient-to-r from-red-800 via-amber-700 to-amber-600 hover:from-red-700 hover:to-amber-500 text-white font-yose text-2xl font-bold shadow-lg transition flex items-center justify-center gap-2">
+            <i data-lucide="wand-sparkles" class="w-7 h-7"></i>
+            <span>落語にする</span>
+          </button>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <button id="blankScriptBtn" class="btn-sub">
+              <i data-lucide="file-pen-line" class="w-5 h-5"></i>
+              <span>白紙から自分で書く</span>
+            </button>
+            <button id="clearDiaryBtn" class="btn-sub">答えを全部消す</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 画面②: 台本をなおす（編集画面） -->
+    <section id="editView" data-view="edit" class="hidden flex-1 overflow-y-auto p-4 md:p-8 bg-[#120f0d]">
+      <div class="max-w-4xl mx-auto space-y-6">
+
+        <div class="bg-gradient-to-r from-emerald-950/60 via-stone-900 to-[#1b1511] p-5 rounded-2xl border-2 border-emerald-700/60 shadow-xl space-y-2">
+          <h2 class="text-xl md:text-2xl font-bold font-yose text-emerald-100">② 台本をなおす ── あなたらしい一席に仕上げましょう</h2>
+          <p class="text-base text-stone-100 leading-relaxed">
+            道具が作ったのは「たたき台（下書き）」です。そのまま演じても構いませんし、セリフを書きかえたり、足したり、消したり、順番を入れかえたりもできます。
+            思い出したことや、ふだんの口ぐせを足すと、あなたらしい一席になります。
+          </p>
+          <details class="text-base text-stone-100">
+            <summary class="cursor-pointer text-emerald-200 font-semibold py-1">落語のことば（上手・下手、クスグリ、サゲ）の説明</summary>
+            <ul class="mt-2 space-y-1 list-disc pl-6 leading-relaxed">
+              <li><strong>上手（かみて）</strong>：客席から見て右側。<strong>下手（しもて）</strong>：客席から見て左側。</li>
+              <li>落語では、ひとりで何人もの役を演じ分けるために顔の向きを変えます。目上の人（ご隠居など）は下手を、目下の人（八っつぁんなど）は上手を向いて話すのが決まりです。</li>
+              <li><strong>笑い所（クスグリ）</strong>：お客さんがくすっと笑うところ。</li>
+              <li><strong>サゲ（オチ）</strong>：噺の最後をしめくくる、ひと言。</li>
+            </ul>
+          </details>
+        </div>
+
+        <!-- 演目・名前 -->
+        <div class="bg-[#1b1511] p-5 rounded-xl border border-stone-700 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label class="block sm:col-span-2">
+            <span class="block text-base font-semibold text-stone-100 mb-1">演目（噺の題）</span>
+            <input type="text" id="editTitle" maxlength="30" class="field-input text-lg">
+          </label>
+          <label class="block">
+            <span class="block text-base font-semibold text-amber-100 mb-1">作（あなたのお名前）</span>
+            <input type="text" id="editAuthorName" maxlength="20" placeholder="例：はなこ" class="field-input">
+          </label>
+          <label class="block">
+            <span class="block text-base font-semibold text-stone-100 mb-1">高座名（演じる噺家の名前）</span>
+            <input type="text" id="editPerformer" maxlength="20" class="field-input">
+          </label>
+          <label class="block">
+            <span class="block text-base font-semibold text-stone-100 mb-1">あらすじ（ひと言で）</span>
+            <input type="text" id="editSummary" maxlength="100" class="field-input">
+          </label>
+        </div>
+
+        <!-- 登場人物 -->
+        <div class="bg-[#1b1511] p-5 rounded-xl border border-stone-700 space-y-3">
+          <h3 class="text-lg font-bold font-yose text-amber-200">登場人物の名前</h3>
+          <p class="text-base text-stone-200">名前を書きかえると、台本の中の同じ名前がまとめて変わります。</p>
+          <div id="castList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+          <datalist id="castDatalist"></datalist>
+        </div>
+
+        <!-- オチ（サゲ）の候補 -->
+        <div id="sagePanel" class="bg-[#1b1511] p-5 rounded-xl border border-amber-800/70 space-y-3">
+          <h3 class="text-lg font-bold font-yose text-amber-200">オチ（サゲ）の候補</h3>
+          <p class="text-base text-stone-200">気に入ったものを押すと、最後のオチのセリフが入れかわります。自分で考えたオチに書きかえるのも大歓迎です。</p>
+          <div id="sageList" class="space-y-2"></div>
+        </div>
+
+        <!-- セリフの一覧 -->
+        <div class="space-y-3">
+          <h3 class="text-xl font-bold font-yose text-amber-200">セリフ（<span id="lineCount">0</span> 行）</h3>
+          <p class="text-base text-stone-200">色の帯は顔の向きです：<span class="text-amber-300">左を向く役（目上）</span>・<span class="text-sky-300">右を向く役（目下）</span>・<span class="text-stone-300">正面（語り）</span></p>
+          <div id="lineList" class="space-y-4"></div>
+          <button id="addLineBtn" type="button" class="btn-sub w-full justify-center text-lg border-dashed">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+            <span>いちばん最後にセリフを足す</span>
+          </button>
+        </div>
+
+        <!-- 操作 -->
+        <div class="flex flex-col sm:flex-row flex-wrap gap-3 pb-6">
+          <button id="editToStageBtn" type="button" class="sm:flex-1 min-h-[56px] py-3 px-6 rounded-xl bg-gradient-to-r from-red-800 via-amber-700 to-amber-600 hover:from-red-700 hover:to-amber-500 text-white font-yose text-xl font-bold shadow-lg flex items-center justify-center gap-2">
+            <i data-lucide="theater" class="w-6 h-6"></i>
+            <span>③ 高座で演じる</span>
+          </button>
+          <button id="printScriptBtn" type="button" class="btn-sub justify-center">
+            <i data-lucide="printer" class="w-5 h-5"></i>
+            <span>印刷用の台本（A4）</span>
+          </button>
+          <button id="copyScriptBtn" type="button" class="btn-sub justify-center">
+            <i data-lucide="copy" class="w-5 h-5"></i>
+            <span>台本を文字でコピー</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 台本帳（保存・書き出し・読み込み） -->
+    <section id="libraryView" data-view="library" class="hidden flex-1 overflow-y-auto p-4 md:p-8 bg-[#120f0d]">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="bg-[#1b1511] p-5 rounded-2xl border-2 border-amber-700/60 space-y-3">
+          <h2 class="text-xl md:text-2xl font-bold font-yose text-amber-100">台本帳 ── 作った台本の保存と引き継ぎ</h2>
+          <p class="text-base text-stone-100 leading-relaxed">
+            作った台本は、この端末のブラウザに<strong class="text-amber-200">自動で保存</strong>されます。下の一覧から選ぶと、もう一度演じたり、続きを直したりできます。<br>
+            別の端末で続きをするときや、次回のセッション（第3回）に持っていくときは、<strong class="text-amber-200">「ファイルに書き出す」</strong>で保存したファイルを、次の端末で<strong class="text-amber-200">「ファイルから読み込む」</strong>で開いてください。
+          </p>
+          <div class="flex flex-wrap gap-3 pt-1">
+            <button id="exportAllBtn" type="button" class="btn-sub">
+              <i data-lucide="download" class="w-5 h-5"></i><span>すべてファイルに書き出す</span>
+            </button>
+            <button id="importBtn" type="button" class="btn-sub">
+              <i data-lucide="upload" class="w-5 h-5"></i><span>ファイルから読み込む</span>
+            </button>
+            <input id="importFileInput" type="file" accept=".json,application/json" class="hidden">
+          </div>
+          <p id="storageWarning" class="hidden text-base text-red-200 bg-red-950/60 border border-red-800 rounded-lg p-3"></p>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="text-xl font-bold font-yose text-amber-200">保存した台本（<span id="libraryCount">0</span> 件）</h3>
+          <div id="libraryList" class="space-y-3"></div>
+          <p id="libraryEmpty" class="hidden text-base text-stone-200 bg-[#1b1511] border border-stone-700 rounded-xl p-5">
+            まだ保存された台本はありません。「① 今日の出来事」から台本を作ると、ここに並びます。
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- フッター -->
+  <footer class="bg-[#100d0b] border-t border-[#2d2017] py-3 px-4 text-center text-sm text-stone-300">
+    <p>電脳寄席「ひより座」は架空の寄席です。登場する寄席名・噺家名は実在の団体・人物とは関係ありません。</p>
+  </footer>
+
+  <!-- 設定モーダル（効果音） -->
+  <div id="configModal" data-modal class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-[#1a1410] border border-stone-700 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-800 pb-3">
+        <h3 class="text-lg font-bold font-yose text-amber-200 flex items-center space-x-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i>
+          <span>設定（音）</span>
+        </h3>
+        <button id="closeConfigBtn" class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-stone-200 hover:bg-stone-800" aria-label="閉じる">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-base text-stone-100">
+        <div class="pt-2 border-t border-stone-800">
+          <label class="flex items-center justify-between cursor-pointer min-h-[48px] gap-3">
+            <span class="text-base text-stone-100">出囃子（太鼓・三味線シンセ）</span>
+            <input type="checkbox" id="debayashiCheck" checked class="w-6 h-6 rounded accent-amber-600">
+          </label>
+        </div>
+
+        <div>
+          <label class="flex items-center justify-between cursor-pointer min-h-[48px] gap-3">
+            <span class="text-base text-stone-100">観客の笑い声・拍手・掛け声</span>
+            <input type="checkbox" id="audienceSfxCheck" checked class="w-6 h-6 rounded accent-amber-600">
+          </label>
+        </div>
+
+        <div>
+          <label class="flex items-center justify-between cursor-pointer min-h-[48px] gap-3">
+            <span class="text-base text-stone-100">拍子木（柝の音）</span>
+            <input type="checkbox" id="hyoshigiCheck" checked class="w-6 h-6 rounded accent-amber-600">
+          </label>
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button id="saveConfigBtn" class="min-h-[48px] px-6 py-2 rounded-lg bg-amber-700 hover:bg-amber-600 text-white font-yose text-lg">
+          保存する
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トーストメッセージ通知 -->
+  <div id="toastMessage" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg max-w-[92vw] bg-stone-900/95 border border-amber-600/80 text-amber-50 text-base shadow-2xl transition-all duration-300 opacity-0 pointer-events-none flex items-center space-x-2">
+    <i data-lucide="info" class="w-4 h-4 text-amber-400"></i>
+    <span id="toastText">案内通知</span>
+  </div>
+
+  <!-- 印刷用の台本（画面には出さず、印刷時だけ表示） -->
+  <div id="printArea" aria-hidden="true"></div>
+
+  <!-- アプリケーション JavaScript -->
+  <script>
+    /* ========================================================
+       1. 音響効果エンジン (Web Audio API)
+       拍子木、太鼓（ドンドン）、三味線風トーン、観客の拍手・笑い声
+       外部URL音源を使わず、ブラウザ標準で確実に鳴るシンセサイザー
+       ======================================================== */
+    class YoseAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+        this.debayashiActive = true;
+        this.audienceSfx = true;
+        this.hyoshigiEnabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      // 拍子木（柝の音）：高音で澄んだ硬い木のぶつかる音（カンッ！）
+      playHyoshigi(pitch = 2200, count = 1, interval = 220) {
+        if (!this.enabled || !this.hyoshigiEnabled) return;
+        this.init();
+
+        for (let i = 0; i < count; i++) {
+          setTimeout(() => {
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(pitch, now);
+            osc.frequency.exponentialRampToValueAtTime(pitch * 0.7, now + 0.08);
+
+            gain.gain.setValueAtTime(0.7, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.13);
+          }, i * interval);
+        }
+      }
+
+      // 開演前の柝（カカカカンッ！）
+      playOpeningClappers() {
+        this.playHyoshigi(2100, 1, 0);
+        setTimeout(() => this.playHyoshigi(2200, 1, 0), 300);
+        setTimeout(() => this.playHyoshigi(2300, 3, 100), 700);
+      }
+
+      // 寄席太鼓（ドン、カラカッカ）
+      playTaiko(freq = 90, duration = 0.4) {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq * 1.5, now);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.4, now + duration);
+
+        gain.gain.setValueAtTime(0.8, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + duration);
+      }
+
+      // 出囃子の小フレーズ演奏（野崎風の和音階出囃子）
+      playDebayashi() {
+        if (!this.enabled || !this.debayashiActive) return;
+        this.init();
+
+        // 日本の陰音階・陽音階ノート (D, Eb, G, A, Bb, D)
+        const notes = [293.66, 311.13, 392.00, 440.00, 466.16, 587.33];
+        const pattern = [0, 2, 3, 5, 3, 2, 0, 3, 2, 0];
+
+        pattern.forEach((noteIdx, idx) => {
+          setTimeout(() => {
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            // 三味線の撥（ばち）のパツンとした音
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(notes[noteIdx], now);
+
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.23);
+
+            // 太鼓の合いの手
+            if (idx % 2 === 0) {
+              this.playTaiko(100, 0.25);
+            }
+          }, idx * 160);
+        });
+      }
+
+      // 観客の笑いと拍手（ピンクノイズと小粒バーストで再現）
+      playApplauseAndLaugh() {
+        if (!this.enabled || !this.audienceSfx) return;
+        this.init();
+
+        const bufferSize = this.ctx.sampleRate * 1.5;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        // 拍手の重なりノイズ生成
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.8));
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1100;
+        filter.Q.value = 1.2;
+
+        const gain = this.ctx.createGain();
+        const now = this.ctx.currentTime;
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.35, now + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        noise.start(now);
+      }
+    }
+
+    const audio = new YoseAudioEngine();
+
+    /* ========================================================
+       2. 見本の落語データ（架空の噺家「日々亭よろず」による見本の一席）
+       誰かを落とすのではなく、出来事のおかしみと人柄の愛嬌で笑わせる
+       ======================================================== */
+    const DEFAULT_RAKUGO_PERFORMANCE = {
+      title: "スタンプ一枚",
+      performer: "日々亭 よろず",
+      summary: "孫から届いたスマホのスタンプに、ご隠居が本気で返事をしてしまう話。",
+      kusuriCount: 3,
+      lines: [
+        {
+          speaker: "よろず",
+          direction: "center",
+          emotion: "normal",
+          action: "bow",
+          text: "えー、毎度ばかばかしいお笑いを一席。昔は手紙一通届くのに三日かかりましたが、今は指一本で一瞬。便利になったぶん、すれ違うのも一瞬でございます。",
+          isKusuri: false
+        },
+        {
+          speaker: "よろず",
+          direction: "center",
+          emotion: "smile",
+          action: "sensu",
+          text: "長屋のご隠居、近ごろお孫さんにスマホを習いまして、これがまあ楽しくてしかたがない。",
+          isKusuri: false
+        },
+        {
+          speaker: "ご隠居",
+          direction: "left",
+          emotion: "smile",
+          action: "speak",
+          text: "「おう、八っつぁん、見とくれ。孫から絵が届いたんだ。猫が布団をかぶって震えてる」",
+          isKusuri: false
+        },
+        {
+          speaker: "八っつぁん",
+          direction: "right",
+          emotion: "normal",
+          action: "speak",
+          text: "「ははあ、そりゃスタンプってやつですよ。『おやすみ』って意味でしょう」",
+          isKusuri: false
+        },
+        {
+          speaker: "ご隠居",
+          direction: "left",
+          emotion: "surprise",
+          action: "speak",
+          text: "「おやすみ？ わしはてっきり寒くて風邪をひいたのかと思って、ちゃんちゃんこを小包で送っちまった」",
+          isKusuri: true,
+          kusuriNote: "【笑い所①】スタンプに本気で心配して小包で返事をするご隠居"
+        },
+        {
+          speaker: "八っつぁん",
+          direction: "right",
+          emotion: "surprise",
+          action: "speak",
+          text: "「スタンプに小包で返事！ そりゃお孫さんもびっくりだ」",
+          isKusuri: false
+        },
+        {
+          speaker: "ご隠居",
+          direction: "left",
+          emotion: "smile",
+          action: "sensu",
+          text: "「それがな、ちゃんと返事が来たんだよ。『じいじ、あったかい』って、今度は猫がちゃんちゃんこを着てるスタンプでな」",
+          isKusuri: true,
+          kusuriNote: "【笑い所②】お孫さんもスタンプで粋に返してくる"
+        },
+        {
+          speaker: "よろず",
+          direction: "center",
+          emotion: "smile",
+          action: "sensu",
+          text: "聞けばそのスタンプ、お孫さんが自分で描いたんだそうで。",
+          isKusuri: false
+        },
+        {
+          speaker: "八っつぁん",
+          direction: "right",
+          emotion: "smile",
+          action: "speak",
+          text: "「粋なお孫さんだ。で、ご隠居、次はなんて返すんです？」",
+          isKusuri: false
+        },
+        {
+          speaker: "ご隠居",
+          direction: "left",
+          emotion: "smile",
+          action: "speak",
+          text: "「決まってるさ。孫が猫を描いてくれたんだ、わしもしばらく猫をかぶっておとなしくしておくよ」",
+          isKusuri: true,
+          kusuriNote: "【笑い所③・サゲ】猫のスタンプと「猫をかぶる」をかけたオチ"
+        },
+        {
+          speaker: "よろず",
+          direction: "center",
+          emotion: "smile",
+          action: "bow",
+          text: "おあとがよろしいようで。",
+          isKusuri: false
+        }
+      ]
+    };
+
+    /* ========================================================
+       3. アプリケーション状態管理
+       ======================================================== */
+    const state = {
+      currentRakugo: DEFAULT_RAKUGO_PERFORMANCE,
+      currentIndex: 0,
+      isPlaying: false,
+      playTimer: null,
+      speed: 1.0,
+      ttsEnabled: ('speechSynthesis' in window),
+      kusuriSeen: new Set(),
+      mode: 'auto', // auto＝自動上演（読み上げ） / self＝自分で声に出して演じる
+      isSpeaking: false,
+      lineToken: 0,      // 表示中の行の番号（古い読み上げの知らせを無視するため）
+      readTimer: null,   // 読み切り時間のタイマー
+      lineDone: { speech: true, reading: true }
+    };
+
+    /* ========================================================
+       4. UI DOM要素の取得
+       ======================================================== */
+    const kozaView = document.getElementById('kozaView');
+    const inputView = document.getElementById('inputView');
+    const libraryView = document.getElementById('libraryView');
+
+    const mekuriTitle = document.getElementById('mekuriTitle');
+    const mekuriName = document.getElementById('mekuriName');
+    const mekuriCredit = document.getElementById('mekuriCredit');
+    const mekuriBox = document.getElementById('mekuriBox');
+
+    const rakugokaWrapper = document.getElementById('rakugokaWrapper');
+    const headGroup = document.getElementById('headGroup');
+    const sensuItem = document.getElementById('sensuItem');
+    const mouthOpen = document.getElementById('mouthOpen');
+    const mouthShape = document.getElementById('mouthShape');
+    const eyesNormal = document.getElementById('eyesNormal');
+    const eyesSmile = document.getElementById('eyesSmile');
+    const eyesSurprise = document.getElementById('eyesSurprise');
+
+    const speechSpeaker = document.getElementById('speechSpeaker');
+    const speechDirection = document.getElementById('speechDirection');
+    const speechText = document.getElementById('speechText');
+    const kusuriBadge = document.getElementById('kusuriBadge');
+    const kusuriCounter = document.getElementById('kusuriCounter');
+    const progressText = document.getElementById('progressText');
+    const progressBar = document.getElementById('progressBar');
+
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playPauseIcon = document.getElementById('playPauseIcon');
+    const playPauseText = document.getElementById('playPauseText');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const speedBtn = document.getElementById('speedBtn');
+    const ttsToggleBtn = document.getElementById('ttsToggleBtn');
+    const ttsIcon = document.getElementById('ttsIcon');
+    const ttsText = document.getElementById('ttsText');
+    const cueBadge = document.getElementById('cueBadge');
+    const nextPreview = document.getElementById('nextPreview');
+    const selfSetup = document.getElementById('selfSetup');
+    const selfControls = document.getElementById('selfControls');
+    const autoControls = document.getElementById('autoControls');
+    const selfNextBtn = document.getElementById('selfNextBtn');
+    const laughBtn = document.getElementById('laughBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    const authorNameInput = document.getElementById('authorNameInput');
+    const performerNameInput = document.getElementById('performerNameInput');
+    const rakugoStyleSelect = document.getElementById('rakugoStyleSelect');
+    const generateBtn = document.getElementById('generateBtn');
+    const blankScriptBtn = document.getElementById('blankScriptBtn');
+    const clearDiaryBtn = document.getElementById('clearDiaryBtn');
+    const copyScriptBtn = document.getElementById('copyScriptBtn');
+
+    const audioToggleBtn = document.getElementById('audioToggleBtn');
+    const audioStatusText = document.getElementById('audioStatusText');
+    const configBtn = document.getElementById('configBtn');
+    const configModal = document.getElementById('configModal');
+    const closeConfigBtn = document.getElementById('closeConfigBtn');
+    const saveConfigBtn = document.getElementById('saveConfigBtn');
+    const debayashiCheck = document.getElementById('debayashiCheck');
+    const audienceSfxCheck = document.getElementById('audienceSfxCheck');
+    const hyoshigiCheck = document.getElementById('hyoshigiCheck');
+    const laughReactionContainer = document.getElementById('laughReactionContainer');
+
+    const askTodaySpeechBubble = document.getElementById('askTodaySpeechBubble');
+
+    /* ========================================================
+       5. 画面切り替えとタブ
+       ======================================================== */
+    function switchTab(target) {
+      document.querySelectorAll('[data-view]').forEach(view => {
+        view.classList.toggle('hidden', view.dataset.view !== target);
+      });
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const active = btn.dataset.tab === target;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-current', active ? 'page' : 'false');
+      });
+      if (target !== 'koza') stopPerformance();
+      if (target === 'edit') renderEditor();
+      if (target === 'library') renderLibrary();
+      window.scrollTo(0, 0);
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    /* ========================================================
+       6. 落語家のアニメーション＆セリフ表示制御
+       ・上下（かみしも）を切る：首と顔の向き（左・右・正面）
+       ・扇子の所作
+       ・表情（通常・笑顔・驚き）
+       ・口パク
+       ======================================================== */
+    function setRakugokaPose(direction = "center", emotion = "normal", action = "speak") {
+      // 1. 上下（かみしも）の向き
+      if (direction === "right") {
+        // 八っつぁん等：上手（向かって右）を向く
+        headGroup.style.transform = "rotate(7deg) translateX(4px)";
+      } else if (direction === "left") {
+        // ご隠居・カミさん等：下手（向かって左）を向く
+        headGroup.style.transform = "rotate(-7deg) translateX(-4px)";
+      } else {
+        // 噺家（正面）
+        headGroup.style.transform = "rotate(0deg) translateX(0px)";
+      }
+
+      // 2. 表情の切り替え
+      eyesNormal.classList.add('hidden');
+      eyesSmile.classList.add('hidden');
+      eyesSurprise.classList.add('hidden');
+
+      if (emotion === "smile") {
+        eyesSmile.classList.remove('hidden');
+      } else if (emotion === "surprise") {
+        eyesSurprise.classList.remove('hidden');
+      } else {
+        eyesNormal.classList.remove('hidden');
+      }
+
+      // 3. 所作（扇子の構え）
+      if (action === "sensu") {
+        sensuItem.style.transform = "rotate(-35deg) translate(-10px, -15px)";
+      } else if (action === "bow") {
+        sensuItem.style.transform = "rotate(0deg) translate(0, 0)";
+        headGroup.style.transform += " translateY(12px)";
+      } else {
+        sensuItem.style.transform = "rotate(-10deg) translate(0, 0)";
+      }
+
+      // 4. 口パクのアニメーション
+      animateMouth();
+    }
+
+    let mouthInterval = null;
+    function animateMouth(duration = 1800) {
+      if (mouthInterval) clearInterval(mouthInterval);
+      let count = 0;
+      mouthInterval = setInterval(() => {
+        count++;
+        if (count % 2 === 0) {
+          mouthOpen.classList.remove('hidden');
+          mouthShape.setAttribute('d', 'M 143 106 Q 150 114 157 106');
+        } else {
+          mouthOpen.classList.add('hidden');
+          mouthShape.setAttribute('d', 'M 143 108 Q 150 112 157 108');
+        }
+        if (count > duration / 120) {
+          clearInterval(mouthInterval);
+          mouthOpen.classList.add('hidden');
+          mouthShape.setAttribute('d', 'M 143 108 Q 150 112 157 108');
+        }
+      }, 120);
+    }
+
+    /* 笑い・歓声・掛け声の客席リアクション吹き出し */
+    function showLaughEffect(text = "ハハハ！") {
+      const bubble = document.createElement('div');
+      const shouts = ["ドッ（大笑い）", "ハハハッ！", "待ってました！", "日本一！", "クスクス...", "上手いねぇ！"];
+      const randomText = text || shouts[Math.floor(Math.random() * shouts.length)];
+      
+      const randomX = Math.floor(Math.random() * 60) - 30; // -30% to +30%
+      bubble.className = "absolute laugh-bubble px-3 py-1 rounded-full bg-red-900/90 text-yellow-200 border border-yellow-500 text-sm md:text-base font-yose shadow-lg pointer-events-none";
+      bubble.style.left = `calc(50% + ${randomX}%)`;
+      bubble.innerText = randomText;
+
+      laughReactionContainer.appendChild(bubble);
+      setTimeout(() => {
+        bubble.remove();
+      }, 2300);
+
+      audio.playApplauseAndLaugh();
+    }
+
+    /* ========================================================
+       7. セリフ進行・レンダリング
+       ======================================================== */
+    function updateMekuri() {
+      // 入力値をそのまま HTML として解釈させないよう textContent で設定する（縦書きは CSS で行う）
+      mekuriTitle.textContent = state.currentRakugo.title || "";
+      mekuriName.textContent = state.currentRakugo.performer || "";
+      const credit = state.currentRakugo.author || "";
+      mekuriCredit.textContent = credit ? `作 ${credit}` : "";
+      mekuriCredit.classList.toggle('hidden', !credit);
+    }
+
+    const DIRECTION_LABELS = {
+      center: "【正面・語り】",
+      right: "【上手（かみて）を向く】",
+      left: "【下手（しもて）を向く】"
+    };
+
+    function renderCurrentLine() {
+      updateMekuri();
+      const lines = state.currentRakugo.lines;
+      if (!lines || lines.length === 0) {
+        speechSpeaker.textContent = "（台本が空です）";
+        speechDirection.textContent = "";
+        speechText.textContent = "「② 台本をなおす」でセリフを足してください。";
+        progressText.textContent = "0 / 0";
+        progressBar.style.width = "0%";
+        cueBadge.classList.add('hidden');
+        nextPreview.classList.add('hidden');
+        return;
+      }
+      if (state.currentIndex >= lines.length) state.currentIndex = lines.length - 1;
+      const line = lines[state.currentIndex];
+
+      speechSpeaker.textContent = line.speaker || "（話し手なし）";
+      speechDirection.textContent = DIRECTION_LABELS[line.direction] || DIRECTION_LABELS.center;
+      speechText.textContent = line.text;
+
+      // クスグリ（笑い所）
+      if (line.isKusuri) {
+        kusuriBadge.classList.remove('hidden');
+        showLaughEffect("ドッ（笑い！）");
+        state.kusuriSeen.add(state.currentIndex);
+        updateKusuriCounter();
+      } else {
+        kusuriBadge.classList.add('hidden');
+      }
+
+      setRakugokaPose(line.direction, line.emotion, line.action);
+
+      progressText.textContent = `${state.currentIndex + 1} / ${lines.length}`;
+      progressBar.style.width = `${Math.round(((state.currentIndex + 1) / lines.length) * 100)}%`;
+
+      if (state.mode === 'self') {
+        renderSelfTurn(line, lines[state.currentIndex + 1]);
+      } else {
+        cueBadge.classList.add('hidden');
+        nextPreview.classList.add('hidden');
+        startLine(line);
+      }
+    }
+
+    /* ---- 自分で演じるモード：顔を向ける方向と役を大きく示す ---- */
+    const DIRECTION_CUES = {
+      center: '正面を向いて、語りの声で',
+      left: '顔を左（下手）に向けて',
+      right: '顔を右（上手）に向けて'
+    };
+    function renderSelfTurn(line, next) {
+      const cue = DIRECTION_CUES[line.direction] || DIRECTION_CUES.center;
+      cueBadge.textContent = line.direction === 'center' ? cue : `${cue}、${line.speaker || ''}になって`;
+      cueBadge.classList.remove('hidden');
+      if (next) {
+        const preview = (next.text || '').length > 30 ? next.text.slice(0, 30) + '…' : next.text;
+        nextPreview.textContent = `つぎ：（${next.speaker || '語り'}）${preview}`;
+      } else {
+        nextPreview.textContent = 'これでおしまいです。最後に、おじぎをしましょう。';
+      }
+      nextPreview.classList.remove('hidden');
+    }
+
+    function finishPerformance() {
+      stopPerformance();
+      audio.playOpeningClappers();
+      showLaughEffect("パチパチパチ（拍手）");
+      showToast("これにて一席、終演でございます！");
+    }
+
+    function goNext() {
+      if (state.currentIndex < state.currentRakugo.lines.length - 1) {
+        state.currentIndex++;
+        renderCurrentLine();
+      } else {
+        finishPerformance();
+      }
+    }
+    function goPrev() {
+      if (state.currentIndex > 0) {
+        state.currentIndex--;
+        renderCurrentLine();
+      }
+    }
+
+    function setMode(mode) {
+      stopPerformance();
+      state.mode = mode;
+      const selfMode = mode === 'self';
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        const active = b.dataset.mode === mode;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-checked', active ? 'true' : 'false');
+      });
+      kozaView.classList.toggle('is-self', selfMode);
+      selfSetup.classList.toggle('hidden', !selfMode);
+      selfControls.classList.toggle('hidden', !selfMode);
+      autoControls.classList.toggle('hidden', selfMode);
+      playPauseBtn.classList.toggle('hidden', selfMode);
+      selfNextBtn.classList.toggle('hidden', !selfMode);
+      nextBtn.classList.toggle('hidden', selfMode);
+      speechText.classList.toggle('is-self', selfMode);
+      renderCurrentLine();
+    }
+
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+    selfNextBtn.addEventListener('click', goNext);
+    laughBtn.addEventListener('click', () => showLaughEffect(null));
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else if (kozaView.requestFullscreen) {
+        kozaView.requestFullscreen().catch(() => showToast("このブラウザでは全画面にできませんでした。"));
+      }
+    });
+
+    /* ---- 自動上演の進め方 ----
+       次の行へ進むのは「読み上げが終わった」かつ「文字を読み切れる時間がたった」ときだけ。
+       行ごとに番号（lineToken）を振り、古い行の読み上げから届いた終了・中断の知らせは無視する。 */
+    const READ_MS_PER_CHAR = 200;   // 1文字あたりの表示時間（1分に300字ほど。もっとゆっくりは「速さ」ボタンで）
+    const READ_MIN_MS = 3500;       // 短いセリフでも最低これだけは表示する
+    const PAUSE_AFTER_LINE_MS = 1200; // 読み終えてから次の行までの間（ま）
+
+    function readingTime(text) {
+      return Math.max(READ_MIN_MS, (text || '').length * READ_MS_PER_CHAR) / state.speed;
+    }
+
+    // 行の表示を始める（読み上げと、読み切り時間のタイマーを同時に動かす）
+    function startLine(line) {
+      const token = ++state.lineToken;
+      if (state.playTimer) clearTimeout(state.playTimer);
+      if (state.readTimer) clearTimeout(state.readTimer);
+      const useTts = state.ttsEnabled && !!window.speechSynthesis;
+      state.lineDone = { speech: !useTts, reading: false };
+
+      state.readTimer = setTimeout(() => {
+        if (token !== state.lineToken) return;
+        state.lineDone.reading = true;
+        advanceIfReady(token);
+      }, readingTime(line.text));
+
+      if (useTts) {
+        speakText(line.text, line.direction, token, () => {
+          if (token !== state.lineToken) return;
+          state.lineDone.speech = true;
+          advanceIfReady(token);
+        });
+      } else if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    function advanceIfReady(token) {
+      if (!state.isPlaying || token !== state.lineToken) return;
+      if (!state.lineDone.speech || !state.lineDone.reading) return;
+      state.playTimer = setTimeout(() => {
+        if (state.isPlaying && token === state.lineToken) goNext();
+      }, PAUSE_AFTER_LINE_MS / state.speed);
+    }
+
+    // 日本語の声を選ぶ（見つからなければブラウザに任せる）
+    function pickJapaneseVoice() {
+      const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+      return voices.find(v => /^ja(-|_|$)/i.test(v.lang) && v.localService)
+        || voices.find(v => /^ja(-|_|$)/i.test(v.lang)) || null;
+    }
+
+    // 長いセリフは文ごとに分けて順に読み上げる（ブラウザによっては長文の途中で止まるため）
+    function splitForSpeech(text) {
+      const parts = [];
+      (text || '').split(/(?<=[。！？!?])/).forEach(s => {
+        let rest = s.trim();
+        while (rest.length > 80) {
+          const cut = Math.max(rest.lastIndexOf('、', 80), 40);
+          parts.push(rest.slice(0, cut + 1));
+          rest = rest.slice(cut + 1);
+        }
+        if (rest) parts.push(rest);
+      });
+      return parts.length ? parts : [''];
+    }
+
+    /* Web Speech APIによる日本語読み上げ。全部読み終えたら（または読めなかったら）onDone を呼ぶ */
+    function speakText(text, direction, token, onDone) {
+      const synth = window.speechSynthesis;
+      let finished = false;
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(watchdog);
+        state.isSpeaking = false;
+        if (onDone) onDone();
+      };
+      // 念のための見張り：読み上げの終了が届かないときでも、十分な時間がたてば先へ進める
+      const watchdog = setTimeout(finish, (text || '').length * 450 / state.speed + 8000);
+      try {
+        synth.cancel();
+        const parts = splitForSpeech(text);
+        const voice = pickJapaneseVoice();
+        parts.forEach((part, i) => {
+          const utter = new SpeechSynthesisUtterance(part);
+          utter.lang = 'ja-JP';
+          if (voice) utter.voice = voice;
+          utter.rate = state.speed * 0.95;
+          // 役によって声の高さを少し変える（下手を向く役・上手を向く役・語り）
+          utter.pitch = direction === 'left' ? 1.15 : (direction === 'right' ? 0.95 : 1.05);
+          utter.onstart = () => { if (token === state.lineToken) state.isSpeaking = true; };
+          utter.onend = () => { if (i === parts.length - 1) finish(); };
+          utter.onerror = (e) => {
+            // 自分で止めたとき（interrupted / canceled）は、その行はもう終わっているので何もしない
+            if (e && (e.error === 'interrupted' || e.error === 'canceled')) return;
+            console.warn("TTS Error:", e && e.error);
+            finish(); // 読めなかったときは、読み切り時間のタイマーだけで進む
+          };
+          synth.speak(utter);
+        });
+      } catch (e) {
+        console.warn("TTS Error:", e);
+        finish();
+      }
+    }
+
+    function playPerformance() {
+      if (!state.currentRakugo.lines.length) {
+        showToast("台本が空です。「② 台本をなおす」でセリフを足してください。");
+        return;
+      }
+      // 最後まで演じ終えていたら最初から
+      if (state.currentIndex >= state.currentRakugo.lines.length - 1) {
+        state.currentIndex = 0;
+        state.kusuriSeen = new Set();
+        updateKusuriCounter();
+      }
+      state.isPlaying = true;
+      playPauseText.textContent = "ひと休み";
+      playPauseIcon.setAttribute('data-lucide', 'pause');
+      lucide.createIcons();
+
+      if (state.currentIndex === 0) {
+        audio.playDebayashi();
+        audio.playOpeningClappers();
+        mekuriBox.classList.add('mekuri-flip');
+        setTimeout(() => mekuriBox.classList.remove('mekuri-flip'), 800);
+      }
+
+      renderCurrentLine();
+    }
+
+    function stopPerformance() {
+      state.isPlaying = false;
+      if (state.playTimer) clearTimeout(state.playTimer);
+      if (state.readTimer) clearTimeout(state.readTimer);
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      playPauseText.textContent = "開演";
+      playPauseIcon.setAttribute('data-lucide', 'play');
+      lucide.createIcons();
+    }
+
+    playPauseBtn.addEventListener('click', () => {
+      if (state.isPlaying) stopPerformance();
+      else playPerformance();
+    });
+    prevBtn.addEventListener('click', goPrev);
+    nextBtn.addEventListener('click', goNext);
+
+    // 速さ（読み上げの速さと、次の行へ進むまでの時間の両方に効く）
+    const SPEEDS = [
+      { value: 1.0, label: 'ふつう' },
+      { value: 0.8, label: 'ゆっくり' },
+      { value: 0.65, label: 'とてもゆっくり' },
+      { value: 1.25, label: 'はやめ' }
+    ];
+    speedBtn.addEventListener('click', () => {
+      const currIdx = SPEEDS.findIndex(s => s.value === state.speed);
+      const next = SPEEDS[(currIdx + 1) % SPEEDS.length];
+      state.speed = next.value;
+      speedBtn.textContent = next.label;
+      showToast(`速さを「${next.label}」にしました`);
+    });
+    // 声の一覧を先に読み込んでおく（Chrome は最初の呼び出しで空のことがある）
+    if (window.speechSynthesis && window.speechSynthesis.getVoices) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.addEventListener?.('voiceschanged', () => window.speechSynthesis.getVoices());
+    }
+
+    ttsToggleBtn.addEventListener('click', () => {
+      state.ttsEnabled = !state.ttsEnabled;
+      ttsText.textContent = state.ttsEnabled ? "読み上げ 入" : "読み上げ 切";
+      ttsToggleBtn.classList.toggle('opacity-60', !state.ttsEnabled);
+      if (!state.ttsEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+      showToast(state.ttsEnabled ? "読み上げを入れました" : "読み上げを切りました（文字だけで進みます）");
+    });
+
+    /* ========================================================
+       8. 落語の仕立て（内蔵の仕立て機）
+       ======================================================== */
+
+
+    /* ---- 話題辞書：出来事の言葉から、場面・昔と今・オチの候補を引く ---- */
+    const TOPICS = [
+      { key: 'phone', words: ['スマホ', 'スマートフォン', '携帯', 'ケータイ', 'LINE', 'ライン', 'メール', 'アプリ', 'スタンプ', '黒電話', '電話', 'カメラ', '写真', '自撮り', '動画'],
+        place: '縁側', old: '昔は黒電話のダイヤルをジーコジーコ回したもんで', now: '指一本で写真まで送れる',
+        ochi: '「電話も人も、つながってるのが一番さ。切れたら、またかけ直しゃいい」' },
+      { key: 'train', words: ['電車', '駅', '切符', '改札', 'バス', '新幹線', '乗り換え', 'ICカード', 'Suica', 'スイカ', 'タクシー'],
+        place: '駅前', old: '昔は駅員さんが切符にパチンとハサミを入れてくれた', now: 'カードをピッとかざせば通れる',
+        ochi: '「乗り遅れたっていいさ。人生は各駅停車、そのぶん景色がよく見える」' },
+      { key: 'shop', words: ['セルフレジ', 'レジ', 'スーパー', 'コンビニ', '買い物', '店員', 'ポイント', 'キャッシュレス', 'ペイ', '会計', '商店街', '八百屋'],
+        place: '商店街', old: '昔は八百屋さんが「おまけだよ」と一本多く入れてくれた', now: '機械が「ありがとうございました」と言ってくれる',
+        ochi: '「機械にお辞儀したっていいじゃないか。礼儀にお釣りはいらないよ」' },
+      { key: 'letter', words: ['手紙', 'はがき', 'ハガキ', '年賀状', '封筒', '切手', '宛名', '習字', '書道', 'ポスト'],
+        place: '郵便ポストの前', old: '昔は手紙一通、届くのに三日かかった', now: '送ったそばから「既読」がつく',
+        ochi: '「宛名を間違えたって大丈夫。気持ちのほうは、ちゃんと届いてるよ」' },
+      { key: 'food', words: ['ご飯', 'ごはん', '料理', '弁当', 'おにぎり', '台所', '晩ご飯', '夕飯', '朝ご飯', 'カレー', '味噌汁', 'ラーメン', 'お菓子', 'ケーキ', '駄菓子', 'おやつ', 'パン'],
+        place: '台所', old: '昔はかまどで飯を炊いて、お焦げを取り合ったもんで', now: 'ボタンひとつでご飯が炊ける',
+        ochi: '「腹がふくれりゃ話もふくらむ。今日の話は、おかわり自由だ」' },
+      { key: 'machine', words: ['掃除', '洗濯', 'ロボット', '家電', '電子レンジ', 'レンジ', 'テレビ', 'リモコン', 'パソコン', 'ゲーム', 'エアコン', '炊飯器'],
+        place: '茶の間', old: '昔はほうきとはたきで、パタパタやったもんで', now: '機械がひとりで掃除してくれる',
+        ochi: '「機械が賢くなったぶん、人間はのんびりすりゃいい。それでおあいこさ」' },
+      { key: 'family', weak: true, words: ['孫', '息子', '娘', '祖母', '祖父', 'おばあちゃん', 'おじいちゃん', 'ばあば', 'じいじ', '家族', '親戚', '子ども', '母', '父'],
+        place: '茶の間', old: '昔は家族みんなでちゃぶ台を囲んだもんで', now: '遠くにいても画面で顔が見られる',
+        ochi: '「教えたり、教わったり。家族ってのは、持ちつ持たれつだ」' },
+      { key: 'garden', words: ['畑', '野菜', '大根', '花', '庭', '植木', '草むしり', '収穫', '家庭菜園', 'おすそ分け'],
+        place: '畑のあぜ道', old: '昔は近所で野菜を分け合うのが当たり前だった', now: '野菜も通販で玄関まで届く',
+        ochi: '「おすそ分けってのは、配ったぶんだけ返ってくる。畑より実りがいいや」' },
+      { key: 'school', words: ['学校', '授業', 'テスト', '宿題', '部活', 'バイト', 'アルバイト', '会社', '仕事', '先生', '大学', '会議', 'オンライン'],
+        place: '帰り道', old: '昔はそろばんと黒板で勉強したもんで', now: 'タブレットで授業を受ける',
+        ochi: '「勉強ってのは、いくつになっても宿題が出るもんだ」' },
+      { key: 'weather', words: ['雨', '傘', '雪', '暑い', '寒い', '台風', '天気', '風', '雷'],
+        place: '軒先', old: '昔は下駄を蹴り上げて明日の天気を占った', now: 'スマホが一時間ごとの天気を教えてくれる',
+        ochi: '「空模様は変わっても、笑い話は晴れのち晴れだ」' },
+      { key: 'pet', words: ['犬', '猫', 'ペット', '金魚', 'インコ', '散歩'],
+        place: '公園', old: '昔は犬も猫も、町内みんなで面倒を見たもんで', now: '犬も服を着て散歩する',
+        ochi: '「散歩してるのは犬か人か。どっちも楽しけりゃそれでいい」' },
+      { key: 'health', words: ['病院', '腰', '膝', '体操', '健康', 'ウォーキング', '運動', 'ジム', '眼鏡', 'メガネ', '歩数'],
+        place: '公園', old: '昔はラジオ体操のハンコを集めたもんで', now: '腕の時計が歩いた数を数えてくれる',
+        ochi: '「体は鍛えるもの、笑いはこぼすもの。今日はたくさんこぼしたねえ」' },
+      { key: 'lost', words: ['忘れ物', '探し物', '財布', '鍵', 'なくし', '失くし', '落とし', '置き忘れ'],
+        place: '交番の前', old: '昔は落とし物をすると、お巡りさんが一緒に探してくれた', now: '失くした物の場所を機械が教えてくれる',
+        ochi: '「探し物は見つからなくても、笑い話はちゃんと見つかったよ」' }
+    ];
+    const DEFAULT_TOPIC = {
+      key: 'default', words: [],
+      place: '長屋の路地', old: '昔は日が暮れると、縁台に集まって話をしたもんで', now: '遠くの人とも画面越しに話ができる',
+      ochi: '「今日のことは日記に書いておこう。読み返すたびに、また笑えるからね」'
+    };
+    const GENERIC_OCHI = [
+      '「日記に書くまでもないさ。こんな話、明日には町内じゅうに広まってるよ」',
+      '「昔のうっかりは笑い話、今日のうっかりは明日の笑い話。どっちも元手はタダだ」'
+    ];
+    const KEYWORD_STOP = ['今日', '昨日', '明日', '自分', '一緒', '大笑', '本当', '久', '最初', '時間', '気持', '全部', '思', '場所'];
+
+    // 出来事の文章からいちばん早く登場する話題を探し、その話題の中でいちばん具体的な言葉（辞書の先頭寄り）を選ぶ。
+    // 人を表す言葉だけの話題（家族など）は、ほかの話題が見つからないときだけ使う。
+    function findTopic(text) {
+      let best = null;
+      TOPICS.forEach(topic => {
+        const hits = topic.words.map((w, order) => ({ w, order, pos: text.indexOf(w) })).filter(h => h.pos >= 0);
+        if (!hits.length) return;
+        const pos = Math.min(...hits.map(h => h.pos));
+        const word = hits.sort((a, b) => a.order - b.order)[0].w;
+        const cand = { topic, word, pos, weak: !!topic.weak };
+        if (!best || (best.weak && !cand.weak) || (best.weak === cand.weak && pos < best.pos)) best = cand;
+      });
+      return best ? { topic: best.topic, word: best.word } : { topic: DEFAULT_TOPIC, word: '' };
+    }
+
+    // 話題辞書にない場合の「キーワード」：カタカナ語 → 漢字の熟語 の順で拾う
+    function extractKeyword(text, found) {
+      if (found.word) return found.word;
+      const kata = (text.match(/[ァ-ヴー]{2,}/g) || []).filter(w => w !== 'ー');
+      if (kata.length) return kata[0];
+      const kanji = (text.match(/[一-龠々]{2,}/g) || []).filter(w => !KEYWORD_STOP.some(s => w.startsWith(s)));
+      if (kanji.length) return kanji[0];
+      return 'その出来事';
+    }
+
+    // 文に分ける
+    function splitSentences(text) {
+      return text.replace(/\r/g, '').split(/(?<=[。！？!?])|\n+/).map(s => s.trim()).filter(Boolean);
+    }
+
+    // 出来事をセリフに使える長さの「かたまり」に分ける（本人の言葉をなるべくそのまま残す）
+    function eventChunks(text, maxLen = 70) {
+      const sentences = splitSentences(text);
+      const chunks = [];
+      let cur = '';
+      sentences.forEach(s => {
+        if (cur && (cur + s).length > maxLen) {
+          chunks.push(cur);
+          cur = s;
+        } else {
+          cur += s;
+        }
+      });
+      if (cur) chunks.push(cur);
+      // 長すぎる場合は最初の3かたまりまで
+      return chunks.slice(0, 3).map(c => c.replace(/[。]$/, ''));
+    }
+
+    function pick(arr, seed) {
+      return arr[Math.abs(seed) % arr.length];
+    }
+
+    // 文字列から簡単な数値（同じ入力なら同じ結果になるように）
+    function hashText(text) {
+      let h = 0;
+      for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0;
+      return h;
+    }
+
+    function fill(template, vars) {
+      return template.replace(/\{(\w+)\}/g, (_, k) => (vars[k] !== undefined ? vars[k] : ''));
+    }
+
+    /* ---- 質問と答え ----
+       利用者は噺家の質問に短く答える。台本では、聞き手（目下の役）が同じ順に質問し、
+       話し手（目上の役＝利用者の分身）が利用者の答えをそのまま話すので、会話がつながる。 */
+    const ANSWER_KEYS = ['where', 'who', 'doing', 'happened', 'quote', 'feeling'];
+    const ANSWER_LABELS = {
+      where: 'どこで', who: 'だれと', doing: '何をしていた', happened: '何が起きた', quote: '言われたこと', feeling: 'どう思った'
+    };
+    const SAMPLE_ANSWERS = [
+      { where: '今日のお昼、家で', who: '孫と', doing: 'スマホのカメラの使い方を教わっていた', happened: '景色を撮るつもりが、自分の顔ばかり三十枚も撮れていた', quote: 'じいじの写真集ができたね', feeling: '恥ずかしいけど、ちょっとうれしかった' },
+      { where: '久しぶりに行った駅で', who: '', doing: '切符を買って改札に向かっていた', happened: 'みんなカードをピッとかざして通っていくので、切符を握りしめたまま改札の前で固まってしまった', quote: '駅員さんに「切符はこちらにどうぞ」とやさしく言われた', feeling: '時代が変わったなあと思った' },
+      { where: '近所で', who: 'ひとりで', doing: '畑でとれた大根を配って歩いていた', happened: 'お返しに野菜やお菓子をたくさんもらって、帰りのほうが荷物が重くなった', quote: 'いつもありがとうね', feeling: 'うれしいやら重いやら' },
+      { where: 'スーパーのセルフレジで', who: '', doing: 'お会計をしていた', happened: '店員さんがいないのに、思わず「お願いします」と頭を下げたら、後ろの小学生も一緒にぺこりと頭を下げた', quote: '', feeling: 'なんだか心がほっこりした' }
+    ];
+
+    function cleanAnswer(s) {
+      return String(s || '').replace(/\s+/g, ' ').trim().replace(/[。．.]+$/, '');
+    }
+    // 「言われたこと」は、説明ごと書かれていても「 」の中だけを取り出す
+    function cleanQuote(s) {
+      const t = cleanAnswer(s);
+      const inner = t.match(/[「『“"]([^」』”"]+)[」』”"]/);
+      return (inner ? inner[1] : t).replace(/^[「『"“]+|[」』"”]+$/g, '').replace(/[。．]+$/, '');
+    }
+    // 書き言葉の答えを話し言葉らしくする（文末が動詞・形容詞のときだけ語尾を足す）
+    function casual(text, particle) {
+      return /[たるいだうくすつぬむぶぐ]$/.test(text) ? text + particle : text;
+    }
+    // 同じ人のセリフが続いたら1つにまとめる（「A」「B」→「A。B」）
+    function mergeSameSpeaker(lines) {
+      const out = [];
+      lines.forEach(l => {
+        const prev = out[out.length - 1];
+        const bracketed = (t) => t.startsWith('「') && t.endsWith('」');
+        if (prev && prev.direction !== 'center' && prev.direction === l.direction && prev.speaker === l.speaker && bracketed(prev.text) && bracketed(l.text)) {
+          const head = prev.text.slice(0, -1);
+          prev.text = head + (/[。！？!?…]$/.test(head) ? '' : '。') + l.text.slice(1);
+          if (l.isKusuri) { prev.isKusuri = true; prev.kusuriNote = [prev.kusuriNote, l.kusuriNote].filter(Boolean).join('／'); }
+          if (l.emotion !== 'normal') prev.emotion = l.emotion;
+        } else {
+          out.push(l);
+        }
+      });
+      return out;
+    }
+    function getAnswers() {
+      const a = {};
+      ANSWER_KEYS.forEach(k => {
+        const el = document.getElementById(`q_${k}`);
+        a[k] = el ? el.value : '';
+      });
+      return a;
+    }
+    // 保存・印刷用に、答えを1つの文章にまとめる
+    function answersToEvent(a) {
+      return ANSWER_KEYS.filter(k => a[k] && a[k].trim()).map(k => `${ANSWER_LABELS[k]}：${a[k].trim()}`).join('\n');
+    }
+
+    /* ---- 口演スタイルごとの語り口 ----
+       落語の決まりで、目上の役（話し手）は下手（左）を、目下の役（聞き手）は上手（右）を向いて話す。 */
+    const STYLE_KITS = {
+      edo_classic: {
+        label: '江戸前の古典風',
+        teller: 'ご隠居', listener: '八っつぁん',
+        endParticle: 'のさ',
+        openers: [
+          'えー、毎度ばかばかしいお笑いを一席申し上げます。{old}。それが今じゃ{now}。世の中、ずいぶん変わりました。',
+          'えー、人間というものは、あとで思い出して笑えることがいちばんの宝だなんて申します。'
+        ],
+        scene: 'ある日のこと、{teller}のところへ{listener}がひょっこり顔を出しまして。',
+        greet: '「ご隠居、こんちは。おや、なんだか話したそうな顔をしてなさる。何かあったんですかい」',
+        open: '「おう八っつぁん、いいところへ来た。ちょいと聞いておくれ。今日、おかしなことがあってな」',
+        askWhere: '「へえ、どこでです？」',
+        askWho: '「だれと一緒だったんです？」',
+        askWhereWho: '「へえ、どこで、だれとです？」',
+        askDoing: '「ほう。で、何をしてたんです？」',
+        askHappened: '「それで、どうなったんです？」',
+        askHappenedDirect: '「で、何があったんです？」',
+        happenedPrefix: '「それがな、',
+        more: '「ふむふむ、それで？」',
+        reactions: ['「ええっ、そんなことが！ そりゃまた、ご隠居らしいや」', '「そいつは驚いた！ 目に浮かぶようですよ」'],
+        protest: '「笑いごとじゃないよ。こっちは冷や汗もんだったんだから」',
+        compare: '「{old}。それが今じゃ{now}。目が回るのも無理はなかろう」',
+        askQuote: '「で、まわりはなんて言ったんです？」',
+        askQuoteWho: '「で、一緒にいた人は、なんて？」',
+        quoteLine: '「それがな、『{q}』だとさ」',
+        quoteTsukkomi: '「『{qs}』とは、うまいこと言うねえ」',
+        askFeeling: '「で、ご隠居はそのとき、どう思ったんです？」',
+        feelingLine: '「そうさな……{f}」',
+        feelingNod: '「なるほどねえ。ご隠居の人柄が出てますよ」',
+        narr: '話すほうも聞くほうも、いつの間にやら笑顔になっております。',
+        sageSetup: '「いやあ、いい話を聞かせてもらいました」',
+        sageQuote: '「『{qs}』……こりゃあ、向こうのほうが一枚うわてだ」',
+        sageDiary: '「今日のことは日記に書いておくよ。題は『{title}』だ」',
+        bow: 'おあとがよろしいようで。',
+        title: '{k}騒動'
+      },
+      modern_tempo: {
+        label: 'テンポの速い現代風',
+        teller: '先輩', listener: '後輩',
+        endParticle: 'んだ',
+        openers: [
+          'どうもー、よろしくお願いします！ 世の中の変わる速さ、ついていけてます？ {old}。それが今は{now}んですから。',
+          'えー、毎日いろんなことが起こります。あとで話すと、だいたい笑い話になるんですねえ。'
+        ],
+        scene: 'ある日の喫茶店。{teller}と{listener}が、ばったり出くわしまして。',
+        greet: '「先輩、なんか話したそうな顔してますね。何かあったんですか？」',
+        open: '「聞いてくれる？ 今日ね、ちょっとおかしなことがあって」',
+        askWhere: '「どこでですか？」',
+        askWho: '「だれとですか？」',
+        askWhereWho: '「どこで、だれとですか？」',
+        askDoing: '「何してたんです？」',
+        askHappened: '「で、どうなったんですか？」',
+        askHappenedDirect: '「で、何があったんですか？」',
+        happenedPrefix: '「それがさ、',
+        more: '「うんうん、それで？」',
+        reactions: ['「えっ、そんなことあります？ 先輩らしいなあ」', '「それ、ちょっと見てみたかったです」'],
+        protest: '「笑わないでよ！ こっちは必死だったんだから」',
+        compare: '「{old}。それが今は{now}んだもの。そりゃ慌てるって」',
+        askQuote: '「まわりの反応は？」',
+        askQuoteWho: '「一緒にいた人、なんて言ってました？」',
+        quoteLine: '「『{q}』だって」',
+        quoteTsukkomi: '「『{qs}』って、うまいこと言いますね」',
+        askFeeling: '「で、先輩はどう思ったんですか？」',
+        feelingLine: '「うーん……{f}」',
+        feelingNod: '「なんか、先輩らしくていいなあ」',
+        narr: 'しゃべっているうちに、ふたりとも笑いが止まらなくなりまして。',
+        sageSetup: '「いやあ、いい話を聞かせてもらいました」',
+        sageQuote: '「『{qs}』か……こりゃ向こうのほうが一枚うわてだね」',
+        sageDiary: '「今日のこと、日記に書いとこう。タイトルは『{title}』で」',
+        bow: 'おあとがよろしいようで。ありがとうございました！',
+        title: '{k}事件'
+      },
+      ninjo_warm: {
+        label: 'ほのぼの人情噺風',
+        teller: '大家さん', listener: '若い衆',
+        endParticle: 'んだよ',
+        openers: [
+          'えー、うまくいかなかった日のほうが、あとで思い出すと温かいものでございます。{old}。今は{now}。それでも人の心持ちは変わりません。',
+          'えー、長屋の暮らしというものは、笑ったり慌てたりの繰り返しでございます。'
+        ],
+        scene: '夕暮れどき、{teller}のところへ{listener}がひょっこり顔を出しまして。',
+        greet: '「大家さん、こんばんは。なんだかうれしそうですね。何かあったんですか」',
+        open: '「おや、いらっしゃい。まあお茶でもおあがり。今日ね、ちょっとおかしなことがあったんだよ」',
+        askWhere: '「どちらでです？」',
+        askWho: '「どなたと一緒だったんです？」',
+        askWhereWho: '「どちらで、どなたとです？」',
+        askDoing: '「何をなすってたんです？」',
+        askHappened: '「それで、どうなったんです？」',
+        askHappenedDirect: '「何があったんです？」',
+        happenedPrefix: '「それがね、',
+        more: '「はい、はい。それで？」',
+        reactions: ['「まあ、そんなことが。大家さんらしいなあ」', '「ふふ、目に浮かぶようです」'],
+        protest: '「笑っておくれ。わたしも、いまなら笑えるよ」',
+        compare: '「{old}。今は{now}。変わらないのは、人がうっかりすることくらいだねえ」',
+        askQuote: '「まわりの方は、なんて？」',
+        askQuoteWho: '「ご一緒の方は、なんておっしゃいました？」',
+        quoteLine: '「それがね、『{q}』って言われたんだよ」',
+        quoteTsukkomi: '「『{qs}』だなんて、いいことを言いますねえ」',
+        askFeeling: '「大家さんは、そのときどう思ったんです？」',
+        feelingLine: '「そうだねえ……{f}」',
+        feelingNod: '「大家さんの話を聞くと、こっちまで温かくなります」',
+        narr: '湯のみから立つ湯気の向こうで、笑い声が長屋に響きます。',
+        sageSetup: '「大家さん、いいお話をありがとうございました」',
+        sageQuote: '「『{qs}』……ふふ、向こうのほうが一枚うわてだったね」',
+        sageDiary: '「今日のことは日記に書いておこう。題は『{title}』だよ」',
+        bow: 'おあとがよろしいようで。',
+        title: '{k}ばなし'
+      }
+    };
+    // 旧バージョンのスタイル名との互換
+    const STYLE_ALIASES = { ichinosuke_speed: 'modern_tempo', modern_humor: 'modern_tempo' };
+    function normalizeStyle(style) {
+      const s = STYLE_ALIASES[style] || style;
+      return STYLE_KITS[s] ? s : 'edo_classic';
+    }
+
+    /* ---- 内蔵の仕立て機：質問への答えから、問いと答えの会話を組み立てる ---- */
+    function createTemplateRakugo({ answers, performerName, style, author }) {
+      const styleKey = normalizeStyle(style);
+      const kit = STYLE_KITS[styleKey];
+      const narrator = (performerName || '日々亭 よろず').split(/\s+/).pop();
+      const a = {};
+      ANSWER_KEYS.forEach(k => { a[k] = k === 'quote' ? cleanQuote(answers[k]) : cleanAnswer(answers[k]); });
+      const allText = ANSWER_KEYS.map(k => a[k]).join('。');
+      const seed = hashText(allText + styleKey);
+      const found = findTopic(allText);
+      const topic = found.topic;
+      const keyword = found.word || extractKeyword(a.happened, found);
+      const alone = /ひとり|一人|独り/.test(a.who);
+      const short = (s, n) => (s.length > n ? s.slice(0, n) + '…' : s);
+
+      const lines = [];
+      // who: 'narrator'（語り・正面）／'teller'（話し手・下手向き）／'listener'（聞き手・上手向き）
+      const add = (who, text, opts = {}) => {
+        lines.push({
+          speaker: who === 'narrator' ? narrator : kit[who],
+          direction: { narrator: 'center', teller: 'left', listener: 'right' }[who],
+          emotion: opts.emotion || 'normal',
+          action: opts.action || (who === 'narrator' ? 'sensu' : 'speak'),
+          text,
+          isKusuri: !!opts.kusuri,
+          kusuriNote: opts.kusuri || ''
+        });
+      };
+      const say = (s) => `「${s}」`;
+
+      // マクラ（導入）と場面
+      const openers = topic.key === 'default' ? kit.openers.slice(1) : kit.openers;
+      add('narrator', fill(pick(openers, seed), { old: topic.old, now: topic.now }), { action: 'bow' });
+      add('narrator', (author ? `本日は${author}さんから伺ったお話で一席。` : '') + fill(kit.scene, kit));
+      add('listener', kit.greet);
+      add('teller', kit.open, { emotion: 'smile' });
+
+      // どこで・だれと・何をしていた（聞き手が尋ね、話し手が利用者の答えで返す）
+      if (a.where && a.who) {
+        add('listener', kit.askWhereWho);
+        add('teller', say(`${a.where}、${a.who}`));
+      } else if (a.where) {
+        add('listener', kit.askWhere);
+        add('teller', say(a.where));
+      } else if (a.who) {
+        add('listener', kit.askWho);
+        add('teller', say(a.who));
+      }
+      if (a.doing) {
+        add('listener', kit.askDoing);
+        add('teller', say(casual(a.doing, kit.endParticle)));
+      }
+
+      // 何が起きた（ここがいちばんの笑い所）
+      add('listener', a.doing ? kit.askHappened : kit.askHappenedDirect, { emotion: 'surprise' });
+      const chunks = eventChunks(a.happened, 60);
+      chunks.forEach((chunk, i) => {
+        if (i > 0) add('listener', kit.more);
+        const isLast = i === chunks.length - 1;
+        add('teller', (i === 0 ? kit.happenedPrefix : '「') + (isLast ? casual(chunk, kit.endParticle) : chunk) + '」', {
+          emotion: isLast ? 'surprise' : 'normal',
+          kusuri: isLast ? '【笑い所】いちばんの出来事' : ''
+        });
+      });
+      add('listener', pick(kit.reactions, seed), { emotion: 'smile' });
+
+      // 言われたこと・思ったこと（答えがないときは、昔と今の話でつなぐ）
+      if (!a.feeling) add('teller', kit.protest, { emotion: 'surprise' });
+      if (!a.quote && !a.feeling && topic.key !== 'default') {
+        add('teller', fill(kit.compare, { old: topic.old, now: topic.now }), { action: 'sensu' });
+      }
+      if (a.quote) {
+        add('listener', a.who && !alone ? kit.askQuoteWho : kit.askQuote);
+        add('teller', fill(kit.quoteLine, { q: a.quote }), { emotion: 'smile', kusuri: '【笑い所】言われたひと言' });
+        add('listener', fill(kit.quoteTsukkomi, { qs: short(a.quote, 20) }), { emotion: 'smile' });
+      }
+      if (a.feeling) {
+        add('listener', kit.askFeeling);
+        add('teller', fill(kit.feelingLine, { f: casual(a.feeling, kit.endParticle) }), { emotion: 'smile', action: 'sensu' });
+        add('listener', kit.feelingNod, { emotion: 'smile' });
+      }
+      add('narrator', kit.narr, { emotion: 'smile' });
+
+      // サゲ（オチ）：答えにつながる候補を先に並べ、1つ目を台本に入れる
+      const title = fill(kit.title, { k: short(keyword, 10) });
+      const sageCandidates = [];
+      const push = (s) => { if (s && !sageCandidates.includes(s)) sageCandidates.push(s); };
+      if (a.quote) push(fill(kit.sageQuote, { qs: short(a.quote, 20) }));
+      if (topic.key !== 'default') push(topic.ochi);
+      push(fill(kit.sageDiary, { title }));
+      GENERIC_OCHI.forEach(push);
+      sageCandidates.splice(3);
+      add('listener', kit.sageSetup);
+      add('teller', sageCandidates[0], { emotion: 'smile', kusuri: '【サゲ（オチ）】最後のひと言' });
+      add('narrator', kit.bow, { emotion: 'smile', action: 'bow' });
+      const merged = mergeSameSpeaker(lines);
+
+      return {
+        title,
+        performer: performerName || '日々亭 よろず',
+        author: author || '',
+        summary: `${author ? `${author}さんの` : ''}「${short(a.happened, 24)}」という出来事を落語にした一席。`,
+        style: styleKey,
+        answers: { ...a },
+        event: answersToEvent(a),
+        sageCandidates,
+        lines: merged
+      };
+    }
+
+    /* ---- 白紙の台本（自分で書く） ---- */
+    function createBlankRakugo({ performerName, style, author, answers }) {
+      const narrator = (performerName || '日々亭 よろず').split(/\s+/).pop();
+      const mk = (speaker, direction, text, extra = {}) => ({
+        speaker, direction, emotion: 'normal', action: 'speak', text, isKusuri: false, kusuriNote: '', ...extra
+      });
+      return {
+        title: 'まだ題のない噺',
+        performer: performerName || '日々亭 よろず',
+        author: author || '',
+        summary: '',
+        style: normalizeStyle(style),
+        answers: { ...answers },
+        event: answersToEvent(answers || {}),
+        sageCandidates: [],
+        lines: [
+          mk(narrator, 'center', 'えー、毎度ばかばかしいお笑いを一席。', { action: 'bow' }),
+          mk('ご隠居', 'left', '「（ここに、目上の役のセリフを書きます）」'),
+          mk('八っつぁん', 'right', '「（ここに、目下の役のセリフを書きます）」'),
+          mk(narrator, 'center', 'おあとがよろしいようで。', { action: 'bow' })
+        ]
+      };
+    }
+
+    /* ---- 読み込んだ台本を安全な形に整える ---- */
+    function normalizeRakugo(raw, fallback = {}) {
+      const str = (v, max = 400) => (typeof v === 'string' ? v : (v == null ? '' : String(v))).slice(0, max);
+      const pickEnum = (v, list, def) => (list.includes(v) ? v : def);
+      const src = raw && typeof raw === 'object' ? raw : {};
+      // 以前の二人用の形式（authors / events）で保存されたものも読めるようにする
+      const oldAuthors = src.authors && typeof src.authors === 'object' ? src.authors : {};
+      const oldEvents = src.events && typeof src.events === 'object' ? src.events : {};
+      const author = typeof src.author === 'string' ? src.author
+        : [oldAuthors.elder, oldAuthors.younger].filter(v => typeof v === 'string' && v).join('・') || fallback.author || '';
+      const event = typeof src.event === 'string' ? src.event
+        : [oldEvents.elder, oldEvents.younger].filter(v => typeof v === 'string' && v).join('\n') || fallback.event || '';
+      const lines = Array.isArray(src.lines) ? src.lines.slice(0, 200).map(l => {
+        const line = l && typeof l === 'object' ? l : {};
+        const isKusuri = line.isKusuri === true;
+        return {
+          speaker: str(line.speaker, 40) || '語り',
+          direction: pickEnum(line.direction, ['center', 'left', 'right'], 'center'),
+          emotion: pickEnum(line.emotion, ['normal', 'smile', 'surprise'], 'normal'),
+          action: pickEnum(line.action, ['speak', 'sensu', 'bow'], 'speak'),
+          text: str(line.text, 1000),
+          isKusuri,
+          kusuriNote: isKusuri ? str(line.kusuriNote, 200) : ''
+        };
+      }) : [];
+      return {
+        id: typeof src.id === 'string' && /^[\w-]{4,64}$/.test(src.id) ? src.id : undefined,
+        title: str(src.title, 60) || '題のない噺',
+        performer: str(src.performer, 30) || fallback.performer || '日々亭 よろず',
+        author: str(author, 40),
+        summary: str(src.summary, 200),
+        style: normalizeStyle(str(src.style, 30) || fallback.style),
+        event: str(event, 2000),
+        answers: (src.answers && typeof src.answers === 'object')
+          ? Object.fromEntries(ANSWER_KEYS.map(k => [k, str(src.answers[k], 500)]))
+          : null,
+        sageCandidates: Array.isArray(src.sageCandidates) ? src.sageCandidates.slice(0, 5).map(s => str(s, 300)).filter(Boolean) : [],
+        createdAt: typeof src.createdAt === 'number' ? src.createdAt : undefined,
+        updatedAt: typeof src.updatedAt === 'number' ? src.updatedAt : undefined,
+        lines
+      };
+    }
+
+    // 新しい台本を高座に載せる
+    function loadRakugo(rakugo, { autoplay = false, goTo = 'koza', save = false } = {}) {
+      stopPerformance();
+      state.currentRakugo = rakugo;
+      if (save) persistCurrent(); // 新しく作った台本はすぐ台本帳に保存
+      state.currentIndex = 0;
+      state.kusuriSeen = new Set();
+      onScriptChanged();
+      if (goTo) switchTab(goTo);
+      renderCurrentLine();
+      if (autoplay) setTimeout(() => playPerformance(), 600);
+    }
+
+    function generateRakugoFromDiary() {
+      const answers = getAnswers();
+      if (!cleanAnswer(answers.happened)) {
+        showToast("「4　何が起きましたか？」に答えてください。ほかは空欄でも作れます。");
+        switchTab('input');
+        const q = document.getElementById('q_happened');
+        q.focus();
+        q.scrollIntoView({ block: 'center' });
+        return;
+      }
+      try {
+        const rakugoData = createTemplateRakugo({
+          answers,
+          performerName: performerNameInput.value.trim() || "日々亭 よろず",
+          style: rakugoStyleSelect.value || "edo_classic",
+          author: authorNameInput.value.trim()
+        });
+        // できたらすぐ高座で演じる（直したいときは「② 台本をなおす」）
+        loadRakugo(rakugoData, { goTo: 'koza', save: true, autoplay: true });
+        showToast(`『${rakugoData.title}』ができました。直したいときは「② 台本をなおす」へどうぞ。`);
+      } catch (err) {
+        console.error("落語生成エラー:", err);
+        showToast("台本づくりで問題が起きました。もう一度お試しください。");
+      }
+    }
+
+    function startBlankScript() {
+      const rakugo = createBlankRakugo({
+        performerName: performerNameInput.value.trim(),
+        style: rakugoStyleSelect.value,
+        author: authorNameInput.value.trim(),
+        answers: getAnswers()
+      });
+      loadRakugo(rakugo, { goTo: 'edit', save: true });
+      showToast("白紙の台本を用意しました。自由に書いてみましょう。");
+    }
+
+    /* ========================================================
+       8-B. 音声入力（Web Speech Recognition）
+       ======================================================== */
+    function setupVoiceRecognition(buttonEl) {
+      const targetInput = document.getElementById(buttonEl.dataset.target);
+      const labelEl = buttonEl.querySelector('.voice-label');
+      const idleLabel = labelEl ? labelEl.textContent : '';
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition || !targetInput) {
+        buttonEl.addEventListener('click', () => {
+          showToast("このブラウザは音声入力に対応していません。文字で入力してください（Chrome や Edge では使えます）。");
+        });
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ja-JP';
+      recognition.interimResults = false;
+      recognition.continuous = false;
+      let isListening = false;
+
+      const reset = () => {
+        isListening = false;
+        if (labelEl) labelEl.textContent = idleLabel;
+        buttonEl.classList.remove('is-listening');
+      };
+
+      buttonEl.addEventListener('click', () => {
+        if (isListening) {
+          recognition.stop();
+          return;
+        }
+        try {
+          recognition.start();
+          isListening = true;
+          if (labelEl) labelEl.textContent = "聞いています…（もう一度押すと止まります）";
+          buttonEl.classList.add('is-listening');
+        } catch (e) {
+          console.warn(e);
+        }
+      });
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        targetInput.value = targetInput.value ? targetInput.value + " " + transcript : transcript;
+        targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+        showToast("「" + transcript + "」と入りました。");
+      };
+      recognition.onerror = reset;
+      recognition.onend = reset;
+    }
+
+    document.querySelectorAll('.voice-btn').forEach(setupVoiceRecognition);
+
+    /* ========================================================
+       8-C. 台本の編集画面
+       ======================================================== */
+    const editTitle = document.getElementById('editTitle');
+    const editAuthorName = document.getElementById('editAuthorName');
+    const editPerformer = document.getElementById('editPerformer');
+    const editSummary = document.getElementById('editSummary');
+    const castList = document.getElementById('castList');
+    const castDatalist = document.getElementById('castDatalist');
+    const sagePanel = document.getElementById('sagePanel');
+    const sageList = document.getElementById('sageList');
+    const lineList = document.getElementById('lineList');
+    const lineCount = document.getElementById('lineCount');
+    const addLineBtn = document.getElementById('addLineBtn');
+    const editToStageBtn = document.getElementById('editToStageBtn');
+
+    const DIRECTION_OPTIONS = [
+      ['center', '正面（語り）'],
+      ['right', '上手を向く（右・目下の役）'],
+      ['left', '下手を向く（左・目上の役）']
+    ];
+    const EMOTION_OPTIONS = [['normal', 'ふつう'], ['smile', 'にっこり'], ['surprise', 'びっくり']];
+    const ACTION_OPTIONS = [['speak', 'しゃべる'], ['sensu', '扇子を使う'], ['bow', 'おじぎ']];
+
+    // 小さな DOM 組み立て用ヘルパー（利用者の入力は必ず value / textContent で入れる）
+    function el(tag, attrs = {}, children = []) {
+      const node = document.createElement(tag);
+      Object.entries(attrs).forEach(([k, v]) => {
+        if (v === undefined || v === null || v === false) return;
+        if (k === 'class') node.className = v;
+        else if (k === 'text') node.textContent = v;
+        else if (k === 'value') node.value = v;
+        else if (k === 'checked') node.checked = !!v;
+        else if (k.startsWith('data-') || k.startsWith('aria-') || ['type', 'title', 'for', 'id', 'rows', 'maxlength', 'list', 'placeholder', 'role'].includes(k)) node.setAttribute(k, v);
+        else node[k] = v;
+      });
+      (Array.isArray(children) ? children : [children]).forEach(c => {
+        if (c == null) return;
+        node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+      });
+      return node;
+    }
+
+    function selectEl(options, value, attrs) {
+      const s = el('select', attrs);
+      options.forEach(([v, label]) => s.appendChild(el('option', { value: v, text: label })));
+      s.value = value;
+      return s;
+    }
+
+    function newLine(base = {}) {
+      return {
+        speaker: base.speaker || '', direction: base.direction || 'center', emotion: 'normal', action: 'speak',
+        text: '', isKusuri: false, kusuriNote: ''
+      };
+    }
+
+    // 1行ぶんのカード
+    function buildLineCard(line, index, total) {
+      const card = el('div', { class: 'line-card', 'data-index': index, 'data-dir': line.direction });
+      const field = (label, control, extraClass = '') => el('label', { class: `line-field ${extraClass}` }, [el('span', { class: 'line-label', text: label }), control]);
+
+      const head = el('div', { class: 'flex flex-wrap items-end gap-3' }, [
+        el('span', { class: 'line-no', text: String(index + 1) }),
+        field('話し手', el('input', { type: 'text', class: 'field-input', value: line.speaker, maxlength: 20, list: 'castDatalist', 'data-field': 'speaker' }), 'w-40 grow'),
+        field('向き', selectEl(DIRECTION_OPTIONS, line.direction, { class: 'field-input', 'data-field': 'direction' }), 'w-60 grow'),
+        field('表情', selectEl(EMOTION_OPTIONS, line.emotion, { class: 'field-input', 'data-field': 'emotion' }), 'w-32'),
+        field('しぐさ', selectEl(ACTION_OPTIONS, line.action, { class: 'field-input', 'data-field': 'action' }), 'w-36')
+      ]);
+
+      const text = el('textarea', { class: 'field-input leading-relaxed resize-y', rows: Math.min(6, Math.max(2, Math.ceil((line.text || '').length / 34))), 'data-field': 'text', placeholder: 'ここにセリフを書きます', 'aria-label': `${index + 1}行目のセリフ` });
+      text.value = line.text;
+
+      const kusuriBox = el('label', { class: 'kusuri-toggle' }, [
+        el('input', { type: 'checkbox', checked: line.isKusuri, 'data-field': 'isKusuri', class: 'w-6 h-6 accent-red-700' }),
+        el('span', { text: '笑い所（クスグリ）にする' })
+      ]);
+      const note = el('input', { type: 'text', class: 'field-input', value: line.kusuriNote || '', maxlength: 100, 'data-field': 'kusuriNote', placeholder: '笑い所のメモ（なくても大丈夫）' });
+      const noteWrap = el('div', { class: line.isKusuri ? 'grow' : 'grow hidden', 'data-role': 'kusuriNoteWrap' }, note);
+
+      const meta = el('div', { class: 'flex flex-wrap items-center gap-3' }, [
+        kusuriBox,
+        noteWrap
+      ]);
+
+      const btn = (action, icon, label, disabled, extra = '') => {
+        const b = el('button', { type: 'button', class: `btn-sub ${extra}`, 'data-action': action, title: label, disabled }, [el('i', { 'data-lucide': icon, class: 'w-5 h-5' }), el('span', { text: label })]);
+        return b;
+      };
+      const actions = el('div', { class: 'flex flex-wrap gap-2' }, [
+        btn('up', 'arrow-up', '上へ', index === 0),
+        btn('down', 'arrow-down', '下へ', index === total - 1),
+        btn('insert', 'plus', 'この下に足す', false),
+        btn('play', 'play', 'ここから演じる', false),
+        btn('delete', 'trash-2', '消す', false, 'btn-danger ml-auto')
+      ]);
+
+      card.append(head, text, meta, actions);
+      return card;
+    }
+
+    // 編集画面全体を描きなおす（並べ替え・追加・削除など構造が変わったとき）
+    function renderEditor() {
+      const r = state.currentRakugo;
+      editTitle.value = r.title || '';
+      editAuthorName.value = r.author || '';
+      editPerformer.value = r.performer || '';
+      editSummary.value = r.summary || '';
+
+      lineList.replaceChildren(...r.lines.map((l, i) => buildLineCard(l, i, r.lines.length)));
+      lineCount.textContent = String(r.lines.length);
+      renderCast();
+      renderSage();
+      lucide.createIcons();
+    }
+
+    function renderCast() {
+      const names = [...new Set(state.currentRakugo.lines.map(l => l.speaker).filter(Boolean))];
+      castDatalist.replaceChildren(...names.map(n => el('option', { value: n })));
+      castList.replaceChildren(...names.map(n => {
+        const count = state.currentRakugo.lines.filter(l => l.speaker === n).length;
+        const input = el('input', { type: 'text', class: 'field-input', value: n, maxlength: 20, 'data-cast': n, 'aria-label': `登場人物「${n}」の名前` });
+        return el('label', { class: 'block' }, [el('span', { class: 'block text-base text-stone-200 mb-1', text: `${count} 行に登場` }), input]);
+      }));
+    }
+
+    // オチのセリフの位置：サゲの印があればそこ、なければ最後の語り（おあとが…）の直前
+    function sageLineIndex() {
+      const lines = state.currentRakugo.lines;
+      const marked = lines.findIndex(l => /サゲ/.test(l.kusuriNote || ''));
+      if (marked >= 0) return marked;
+      for (let i = lines.length - 1; i >= 0; i--) {
+        if (lines[i].direction !== 'center') return i;
+      }
+      return lines.length - 1;
+    }
+
+    function renderSage() {
+      const cands = state.currentRakugo.sageCandidates || [];
+      sagePanel.classList.toggle('hidden', cands.length === 0);
+      const idx = sageLineIndex();
+      const current = state.currentRakugo.lines[idx] ? state.currentRakugo.lines[idx].text : '';
+      sageList.replaceChildren(...cands.map((c, i) => {
+        const chosen = c === current;
+        return el('button', { type: 'button', class: `sage-btn${chosen ? ' is-active' : ''}`, 'data-sage': i }, [
+          el('span', { class: 'sage-mark', text: chosen ? '使用中' : `候補${i + 1}` }),
+          el('span', { text: c })
+        ]);
+      }));
+    }
+
+    // 台本の中身が変わったら：高座や保存など、ほかの表示に知らせる
+    function commitEdit({ rerender = false } = {}) {
+      state.currentRakugo.updatedAt = Date.now();
+      scheduleSave();
+      if (state.currentIndex >= state.currentRakugo.lines.length) {
+        state.currentIndex = Math.max(0, state.currentRakugo.lines.length - 1);
+      }
+      onScriptChanged();
+      if (rerender) renderEditor();
+    }
+
+    // 演目・名前など
+    editTitle.addEventListener('input', () => { state.currentRakugo.title = editTitle.value; commitEdit(); });
+    editPerformer.addEventListener('input', () => { state.currentRakugo.performer = editPerformer.value; commitEdit(); });
+    editSummary.addEventListener('input', () => { state.currentRakugo.summary = editSummary.value; commitEdit(); });
+    editAuthorName.addEventListener('input', () => {
+      state.currentRakugo.author = editAuthorName.value.trim();
+      commitEdit();
+    });
+
+    // セリフの各項目の変更
+    lineList.addEventListener('input', (e) => {
+      const field = e.target.dataset.field;
+      const card = e.target.closest('.line-card');
+      if (!field || !card) return;
+      const i = Number(card.dataset.index);
+      const line = state.currentRakugo.lines[i];
+      if (!line) return;
+      if (field === 'isKusuri') {
+        line.isKusuri = e.target.checked;
+        card.querySelector('[data-role="kusuriNoteWrap"]').classList.toggle('hidden', !line.isKusuri);
+      } else {
+        line[field] = e.target.value;
+      }
+      if (field === 'direction') card.dataset.dir = line.direction;
+      commitEdit();
+      if (field === 'speaker') renderCast();
+      if (field === 'text') renderSage();
+    });
+    // 並べ替え・追加・削除・ここから演じる
+    lineList.addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-action]');
+      if (!b) return;
+      const card = b.closest('.line-card');
+      const i = Number(card.dataset.index);
+      const lines = state.currentRakugo.lines;
+      const action = b.dataset.action;
+      let focusIndex = null;
+      if (action === 'up' && i > 0) {
+        [lines[i - 1], lines[i]] = [lines[i], lines[i - 1]];
+        focusIndex = i - 1;
+      } else if (action === 'down' && i < lines.length - 1) {
+        [lines[i + 1], lines[i]] = [lines[i], lines[i + 1]];
+        focusIndex = i + 1;
+      } else if (action === 'insert') {
+        lines.splice(i + 1, 0, newLine({ speaker: lines[i].speaker, direction: lines[i].direction }));
+        focusIndex = i + 1;
+      } else if (action === 'delete') {
+        const preview = (lines[i].text || '').slice(0, 30);
+        if (!confirm(`${i + 1}行目のセリフを消します。よろしいですか？\n「${preview}」`)) return;
+        lines.splice(i, 1);
+        focusIndex = Math.min(i, lines.length - 1);
+      } else if (action === 'play') {
+        state.currentIndex = i;
+        state.kusuriSeen = new Set();
+        switchTab('koza');
+        renderCurrentLine();
+        return;
+      } else {
+        return;
+      }
+      commitEdit({ rerender: true });
+      if (focusIndex !== null && focusIndex >= 0) {
+        const target = lineList.querySelector(`.line-card[data-index="${focusIndex}"]`);
+        if (target) {
+          target.scrollIntoView({ block: 'center' });
+          const ta = target.querySelector(action === 'insert' ? 'textarea' : `button[data-action="${action}"]`);
+          if (ta && !ta.disabled) ta.focus();
+          target.classList.add('just-moved');
+          setTimeout(() => target.classList.remove('just-moved'), 900);
+        }
+      }
+    });
+
+    addLineBtn.addEventListener('click', () => {
+      const lines = state.currentRakugo.lines;
+      const last = lines[lines.length - 1];
+      lines.push(newLine({ speaker: last ? last.speaker : '', direction: last ? last.direction : 'center' }));
+      commitEdit({ rerender: true });
+      const target = lineList.lastElementChild;
+      if (target) {
+        target.scrollIntoView({ block: 'center' });
+        target.querySelector('textarea').focus();
+      }
+    });
+
+    // 登場人物の名前の一括変更
+    castList.addEventListener('change', (e) => {
+      const oldName = e.target.dataset.cast;
+      const newName = e.target.value.trim();
+      if (!oldName || !newName || oldName === newName) return;
+      state.currentRakugo.lines.forEach(l => { if (l.speaker === oldName) l.speaker = newName; });
+      commitEdit({ rerender: true });
+      showToast(`「${oldName}」を「${newName}」に変えました。`);
+    });
+
+    // オチの候補を選ぶ
+    sageList.addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-sage]');
+      if (!b) return;
+      const cand = state.currentRakugo.sageCandidates[Number(b.dataset.sage)];
+      const idx = sageLineIndex();
+      const line = state.currentRakugo.lines[idx];
+      if (!line || !cand) return;
+      line.text = cand;
+      line.isKusuri = true;
+      if (!/サゲ/.test(line.kusuriNote || '')) line.kusuriNote = '【サゲ（オチ）】最後のひと言';
+      commitEdit({ rerender: true });
+      showToast("オチを入れかえました。");
+    });
+
+    editToStageBtn.addEventListener('click', () => {
+      state.currentIndex = 0;
+      state.kusuriSeen = new Set();
+      switchTab('koza');
+      renderCurrentLine();
+    });
+
+    /* ========================================================
+       8-D. 保存と引き継ぎ（localStorage ／ JSON ファイル）
+       ======================================================== */
+    const STORAGE_KEYS = {
+      scripts: 'rakugoDiary.scripts.v1',
+      currentId: 'rakugoDiary.currentId.v1',
+      draft: 'rakugoDiary.draft.v1'
+    };
+    const EXPORT_APP = 'rakugo-diary';
+    const EXPORT_FORMAT = 1;
+
+    const libraryList = document.getElementById('libraryList');
+    const libraryCount = document.getElementById('libraryCount');
+    const libraryEmpty = document.getElementById('libraryEmpty');
+    const exportAllBtn = document.getElementById('exportAllBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFileInput = document.getElementById('importFileInput');
+    const storageWarning = document.getElementById('storageWarning');
+
+    function storageGet(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+    function storageSet(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+        storageWarning.classList.add('hidden');
+        return true;
+      } catch (e) {
+        storageWarning.textContent = 'このブラウザには保存できませんでした（プライベートブラウズ中や容量不足の可能性があります）。台本をなくさないよう「ファイルに書き出す」で保存してください。';
+        storageWarning.classList.remove('hidden');
+        return false;
+      }
+    }
+
+    function newId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'r-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    }
+
+    function loadScripts() {
+      const list = storageGet(STORAGE_KEYS.scripts, []);
+      return Array.isArray(list) ? list.map(r => normalizeRakugo(r)).filter(r => r.id) : [];
+    }
+    function saveScripts(list) {
+      return storageSet(STORAGE_KEYS.scripts, list);
+    }
+
+    // いまの台本を台本帳に保存（なければ追加）
+    function persistCurrent() {
+      const r = state.currentRakugo;
+      if (!r.id) r.id = newId();
+      if (!r.createdAt) r.createdAt = Date.now();
+      if (!r.updatedAt) r.updatedAt = r.createdAt;
+      const list = loadScripts();
+      const i = list.findIndex(x => x.id === r.id);
+      const copy = JSON.parse(JSON.stringify(r));
+      if (i >= 0) list[i] = copy; else list.unshift(copy);
+      saveScripts(list);
+      storageSet(STORAGE_KEYS.currentId, r.id);
+      if (!libraryView.classList.contains('hidden')) renderLibrary();
+    }
+
+    let saveTimer = null;
+    function scheduleSave() {
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(persistCurrent, 500);
+    }
+    // ページを閉じる直前にも保存
+    window.addEventListener('beforeunload', () => {
+      if (saveTimer) { clearTimeout(saveTimer); persistCurrent(); }
+      saveDraft();
+    });
+
+    // 入力画面の下書き（名前・出来事など）
+    function saveDraft() {
+      const answers = getAnswers();
+      storageSet(STORAGE_KEYS.draft, {
+        author: authorNameInput.value, answers,
+        performer: performerNameInput.value, style: rakugoStyleSelect.value
+      });
+    }
+    function restoreDraft() {
+      const d = storageGet(STORAGE_KEYS.draft, null);
+      if (!d || typeof d !== 'object') return;
+      const set = (input, v) => { if (input && typeof v === 'string') input.value = v; };
+      set(authorNameInput, d.author);
+      if (d.answers && typeof d.answers === 'object') {
+        ANSWER_KEYS.forEach(k => set(document.getElementById(`q_${k}`), d.answers[k]));
+      } else if (typeof d.event === 'string') {
+        // 以前の「自由に書く」形式の下書きは「何が起きましたか」に入れる
+        set(document.getElementById('q_happened'), d.event);
+      }
+      set(performerNameInput, d.performer);
+      if (typeof d.style === 'string') rakugoStyleSelect.value = normalizeStyle(d.style);
+    }
+    let draftTimer = null;
+    [authorNameInput, performerNameInput, rakugoStyleSelect, ...ANSWER_KEYS.map(k => document.getElementById(`q_${k}`))].forEach(input => {
+      input.addEventListener('input', () => {
+        if (draftTimer) clearTimeout(draftTimer);
+        draftTimer = setTimeout(saveDraft, 400);
+      });
+    });
+
+    function formatDate(ms) {
+      if (!ms) return '';
+      const d = new Date(ms);
+      const p = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`;
+    }
+
+    function renderLibrary() {
+      const list = loadScripts().sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      libraryCount.textContent = String(list.length);
+      libraryEmpty.classList.toggle('hidden', list.length > 0);
+      libraryList.replaceChildren(...list.map(r => {
+        const isCurrent = r.id === state.currentRakugo.id;
+        const btn = (action, icon, label, extra = '') => el('button', { type: 'button', class: `btn-sub ${extra}`, 'data-action': action }, [el('i', { 'data-lucide': icon, class: 'w-5 h-5' }), el('span', { text: label })]);
+        return el('div', { class: `library-card${isCurrent ? ' is-current' : ''}`, 'data-id': r.id }, [
+          el('div', { class: 'flex flex-wrap items-baseline gap-x-3 gap-y-1' }, [
+            el('span', { class: 'text-xl font-bold font-yose text-amber-100', text: r.title }),
+            isCurrent ? el('span', { class: 'current-pill', text: 'いま開いている台本' }) : null
+          ]),
+          el('p', { class: 'text-base text-stone-200', text: [r.author ? `作：${r.author}` : '', `高座名：${r.performer}`, `${r.lines.length} 行`, `最終更新：${formatDate(r.updatedAt)}`].filter(Boolean).join('　') }),
+          (() => {
+            const ev = (r.answers && r.answers.happened) || r.event || '';
+            return ev ? el('p', { class: 'text-base text-stone-200', text: `出来事：${ev.length > 50 ? ev.slice(0, 50) + '…' : ev}` }) : null;
+          })(),
+          el('div', { class: 'flex flex-wrap gap-2 pt-1' }, [
+            btn('play', 'theater', '演じる'),
+            btn('edit', 'file-pen-line', 'なおす'),
+            btn('export', 'download', 'この台本を書き出す'),
+            btn('delete', 'trash-2', '消す', 'btn-danger ml-auto')
+          ])
+        ]);
+      }));
+      lucide.createIcons();
+    }
+
+    libraryList.addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-action]');
+      if (!b) return;
+      const id = b.closest('.library-card').dataset.id;
+      const list = loadScripts();
+      const r = list.find(x => x.id === id);
+      if (!r) return;
+      const action = b.dataset.action;
+      if (action === 'play' || action === 'edit') {
+        if (saveTimer) { clearTimeout(saveTimer); persistCurrent(); }
+        loadRakugo(r, { goTo: action === 'play' ? 'koza' : 'edit' });
+        storageSet(STORAGE_KEYS.currentId, r.id);
+      } else if (action === 'export') {
+        downloadJson([r], `ひより座_${r.title}`);
+      } else if (action === 'delete') {
+        if (!confirm(`台本『${r.title}』を消します。元には戻せません。よろしいですか？\n（念のため、先に「この台本を書き出す」で保存しておくと安心です）`)) return;
+        saveScripts(list.filter(x => x.id !== id));
+        if (state.currentRakugo.id === id) delete state.currentRakugo.id;
+        renderLibrary();
+        showToast(`『${r.title}』を消しました。`);
+      }
+    });
+
+    function safeFileName(name) {
+      return String(name).replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 60) || 'rakugo';
+    }
+    function downloadJson(scripts, baseName) {
+      const d = new Date();
+      const p = (n) => String(n).padStart(2, '0');
+      const stamp = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+      const payload = { app: EXPORT_APP, format: EXPORT_FORMAT, exportedAt: d.toISOString(), scripts };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${safeFileName(baseName)}_${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast(`${scripts.length} 件の台本をファイルに書き出しました（ダウンロードフォルダをご確認ください）。`);
+    }
+
+    exportAllBtn.addEventListener('click', () => {
+      if (saveTimer) { clearTimeout(saveTimer); persistCurrent(); }
+      const list = loadScripts();
+      if (!list.length) {
+        showToast("書き出す台本がまだありません。");
+        return;
+      }
+      downloadJson(list, 'ひより座_台本帳');
+    });
+
+    // 読み込み：書き出したファイル（{app, scripts}）、台本1件、台本の配列のどれでも受け付ける
+    function importScripts(data) {
+      let items = [];
+      if (Array.isArray(data)) items = data;
+      else if (data && Array.isArray(data.scripts)) items = data.scripts;
+      else if (data && Array.isArray(data.lines)) items = [data];
+      const list = loadScripts();
+      let added = 0, updated = 0, skipped = 0;
+      items.slice(0, 500).forEach(raw => {
+        const r = normalizeRakugo(raw, { defaultAuthor: 'tool' });
+        if (!r.lines.length) { skipped++; return; }
+        if (!r.id) r.id = newId();
+        if (!r.createdAt) r.createdAt = Date.now();
+        if (!r.updatedAt) r.updatedAt = r.createdAt;
+        const i = list.findIndex(x => x.id === r.id);
+        if (i < 0) { list.unshift(r); added++; }
+        else if ((r.updatedAt || 0) > (list[i].updatedAt || 0)) { list[i] = r; updated++; }
+        else skipped++;
+      });
+      saveScripts(list);
+      return { added, updated, skipped };
+    }
+
+    importBtn.addEventListener('click', () => importFileInput.click());
+    importFileInput.addEventListener('change', async () => {
+      const file = importFileInput.files && importFileInput.files[0];
+      importFileInput.value = '';
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("ファイルが大きすぎます（5MBまで）。");
+        return;
+      }
+      try {
+        const data = JSON.parse(await file.text());
+        const { added, updated, skipped } = importScripts(data);
+        renderLibrary();
+        if (added + updated === 0) {
+          showToast(skipped ? "新しい台本はありませんでした（同じ台本がすでにあります）。" : "台本が見つかりませんでした。書き出したファイルを選んでください。");
+        } else {
+          showToast(`読み込みました：新しく ${added} 件、更新 ${updated} 件${skipped ? `（同じもの ${skipped} 件は飛ばしました）` : ''}`);
+        }
+      } catch (e) {
+        console.warn(e);
+        showToast("ファイルを読み込めませんでした。この道具で書き出した .json ファイルを選んでください。");
+      }
+    });
+
+    /* ========================================================
+       8-E. 印刷用の台本（A4）
+       ======================================================== */
+    const printArea = document.getElementById('printArea');
+    const printScriptBtn = document.getElementById('printScriptBtn');
+    const PRINT_DIRECTION = { center: '正面・語り', right: '上手を向く', left: '下手を向く' };
+
+    function buildPrintArea(r) {
+      const meta = [
+        ['高座名', r.performer],
+        r.author ? ['作', r.author] : null,
+        ['作成日', formatDate(r.createdAt || Date.now())],
+        r.summary ? ['あらすじ', r.summary] : null
+      ].filter(Boolean);
+
+
+      const rows = r.lines.map((l, i) => el('tr', {}, [
+        el('td', { class: 'p-no', text: String(i + 1) }),
+        el('td', { class: 'p-speaker' }, [
+          el('div', { class: 'p-name', text: l.speaker }),
+          el('div', { class: 'p-dir', text: PRINT_DIRECTION[l.direction] || '' })
+        ]),
+        el('td', { class: 'p-text' }, [
+          l.isKusuri ? el('span', { class: 'p-kusuri', text: /サゲ/.test(l.kusuriNote || '') ? '★オチ' : '★笑い所' }) : null,
+          el('span', { text: l.text })
+        ])
+      ]));
+
+      printArea.replaceChildren(
+        el('h1', { class: 'p-title', text: r.title || '題のない噺' }),
+        el('table', { class: 'p-meta' }, meta.map(([k, v]) => el('tr', {}, [el('th', { text: k }), el('td', { text: v })]))),
+        r.event ? el('div', { class: 'p-events' }, el('p', {}, [el('strong', { text: '今日の出来事（質問への答え）' }), '\n' + r.event])) : null,
+        el('table', { class: 'p-lines' }, [
+          el('thead', {}, el('tr', {}, [el('th', { text: '' }), el('th', { text: '話し手・向き' }), el('th', { text: 'セリフ' })])),
+          el('tbody', {}, rows)
+        ]),
+        el('p', { class: 'p-foot', text: '★笑い所＝お客さんがくすっと笑うところ。上手（かみて）＝客席から見て右、下手（しもて）＝左。　電脳寄席「ひより座」（架空の寄席）で作成' })
+      );
+    }
+
+    printScriptBtn.addEventListener('click', () => {
+      if (!state.currentRakugo.lines.length) {
+        showToast("印刷する台本がありません。");
+        return;
+      }
+      buildPrintArea(state.currentRakugo);
+      window.print();
+    });
+
+    // 台本をテキストにする（コピー用・全文表示用）
+    function scriptToText(rakugo) {
+      let full = `【演目】${rakugo.title}\n【演者】${rakugo.performer}\n`;
+      if (rakugo.author) full += `【作】${rakugo.author}\n`;
+      if (rakugo.summary) full += `【あらすじ】${rakugo.summary}\n`;
+      full += '\n';
+      rakugo.lines.forEach((l, i) => {
+        const flag = l.isKusuri ? " ★笑い所" : "";
+        full += `${i + 1}. ${l.speaker}${flag}\n   ${l.text}\n`;
+      });
+      return full;
+    }
+
+    // 台本が変わったときに、関連する表示をまとめて更新する
+    function onScriptChanged() {
+      updateKusuriCounter();
+    }
+
+    // 笑い所の数（出てきた数 / 全体の数）
+    function updateKusuriCounter() {
+      const total = state.currentRakugo.lines.filter(l => l.isKusuri).length;
+      kusuriCounter.textContent = `${state.kusuriSeen.size} / ${total}`;
+    }
+
+    /* ========================================================
+       9. 各種イベントリスナー・操作
+       ======================================================== */
+    // 出来事の例を入力欄へ
+    document.querySelectorAll('.sample-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sample = SAMPLE_ANSWERS[Number(btn.dataset.sample)];
+        if (!sample) return;
+        ANSWER_KEYS.forEach(k => { document.getElementById(`q_${k}`).value = sample[k] || ''; });
+        saveDraft();
+        showToast("例の答えを入れました。自由に書きかえてください。");
+      });
+    });
+
+    // 答えを全部消す
+    clearDiaryBtn.addEventListener('click', () => {
+      const any = ANSWER_KEYS.some(k => document.getElementById(`q_${k}`).value.trim());
+      if (any && !confirm("質問への答えを全部消します。よろしいですか？")) return;
+      ANSWER_KEYS.forEach(k => { document.getElementById(`q_${k}`).value = ''; });
+      saveDraft();
+      showToast("答えを消しました。");
+    });
+
+    // 高座の呼びかけを押したら、出来事の画面へ
+    askTodaySpeechBubble.addEventListener('click', () => {
+      switchTab('input');
+      document.getElementById('q_where').focus();
+    });
+
+    // 白紙から書く
+    blankScriptBtn.addEventListener('click', startBlankScript);
+
+    generateBtn.addEventListener('click', generateRakugoFromDiary);
+
+    // 台本コピー
+    copyScriptBtn.addEventListener('click', () => {
+      const text = scriptToText(state.currentRakugo);
+      if (!state.currentRakugo.lines.length) {
+        showToast("コピーする台本がありません。");
+        return;
+      }
+      copyText(text).then((ok) => {
+        showToast(ok ? "台本をコピーしました。" : "コピーできませんでした。台本を選択してコピーしてください。");
+      });
+    });
+
+    /* クリップボードへのコピー（navigator.clipboard を優先し、使えない環境のみ旧方式） */
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (e) {
+          console.warn("clipboard.writeText に失敗したため旧方式で再試行します:", e);
+        }
+      }
+      const tempArea = document.createElement('textarea');
+      tempArea.value = text;
+      tempArea.setAttribute('readonly', '');
+      tempArea.style.position = 'fixed';
+      tempArea.style.opacity = '0';
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      let ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch (e) {
+        ok = false;
+      }
+      document.body.removeChild(tempArea);
+      return ok;
+    }
+
+    // 音響トグル
+    audioToggleBtn.addEventListener('click', () => {
+      audio.enabled = !audio.enabled;
+      if (audio.enabled) {
+        audioStatusText.innerText = "音: 入";
+        audioToggleBtn.classList.add('bg-[#241a14]', 'text-amber-200');
+        audioToggleBtn.classList.remove('bg-stone-800', 'text-stone-300');
+        audio.playHyoshigi(2200, 1);
+      } else {
+        audioStatusText.innerText = "音: 切";
+        audioToggleBtn.classList.remove('bg-[#241a14]', 'text-amber-200');
+        audioToggleBtn.classList.add('bg-stone-800', 'text-stone-300');
+      }
+    });
+
+    // 設定モーダル
+    configBtn.addEventListener('click', () => {
+      configModal.classList.remove('hidden');
+    });
+    closeConfigBtn.addEventListener('click', () => {
+      configModal.classList.add('hidden');
+    });
+    saveConfigBtn.addEventListener('click', () => {
+      audio.debayashiActive = debayashiCheck.checked;
+      audio.audienceSfx = audienceSfxCheck.checked;
+      audio.hyoshigiEnabled = hyoshigiCheck.checked;
+      configModal.classList.add('hidden');
+      showToast("寄席の設定を保存いたしました。");
+    });
+
+    // トースト通知関数
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toastMessage');
+      const textEl = document.getElementById('toastText');
+      textEl.innerText = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+
+    /* キーボード操作（矢印キーでセリフ送り、スペースで再生/一時停止） */
+    // 文字入力中の要素（入力欄・テキストエリア・セレクト・編集可能領域）かどうか
+    function isTypingTarget(el) {
+      if (!el) return false;
+      if (el.isContentEditable) return true;
+      return ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
+    }
+
+    // モーダルが開いているかどうか
+    function isAnyModalOpen() {
+      return Array.from(document.querySelectorAll('[data-modal]')).some(m => !m.classList.contains('hidden'));
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (isTypingTarget(e.target) || isTypingTarget(document.activeElement)) return;
+      if (isAnyModalOpen()) return;
+      // 高座画面が表示されているときだけショートカットを使う
+      if (kozaView.classList.contains('hidden')) return;
+      // ボタンにフォーカスがある状態のスペース／Enter はボタン本来の動作に任せる（二重に作動させない）
+      if ((e.code === 'Space' || e.code === 'Enter') && document.activeElement && document.activeElement.tagName === 'BUTTON') return;
+      const selfMode = state.mode === 'self';
+      if (e.code === 'Space' || (selfMode && (e.code === 'Enter' || e.code === 'NumpadEnter'))) {
+        e.preventDefault();
+        // 自分で演じるときはスペース・Enter で次のセリフへ、自動上演では開演／ひと休み
+        if (selfMode) goNext(); else playPauseBtn.click();
+      } else if (e.code === 'ArrowRight' || e.code === 'ArrowDown' || e.code === 'PageDown') {
+        e.preventDefault();
+        goNext();
+      } else if (e.code === 'ArrowLeft' || e.code === 'ArrowUp' || e.code === 'PageUp') {
+        e.preventDefault();
+        goPrev();
+      }
+    });
+
+    /* 初期化ロード */
+    window.onload = function() {
+      lucide.createIcons();
+      restoreDraft();
+      // 前回開いていた台本があれば開く
+      const lastId = storageGet(STORAGE_KEYS.currentId, null);
+      const last = lastId && loadScripts().find(r => r.id === lastId);
+      if (last) state.currentRakugo = last;
+      onScriptChanged();
+      renderCurrentLine();
+      // 初回案内
+      setTimeout(() => {
+        showToast("ようこそ、電脳寄席「ひより座」へ。「① 今日の出来事」から始めましょう。");
+      }, 700);
+    };
+  </script>
+</body>
+</html>
